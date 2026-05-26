@@ -1,0 +1,42 @@
+# 默认行为：文本文件自动换行符转换
+* text=auto
+
+# Go 源码
+*.go text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf
+
+# 配置与文档
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+LICENSE text eol=lf
+Makefile text eol=lf
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+.env.example text eol=lf
+
+# SQL 迁移
+*.sql text eol=lf
+
+# Shell 脚本
+*.sh text eol=lf
+
+# 二进制文件
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.bz2 binary
+*.7z binary
