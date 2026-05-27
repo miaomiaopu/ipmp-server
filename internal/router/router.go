@@ -51,8 +51,9 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 
 	api := r.Group("/api/v1")
 	{
-		// 认证（登录限流独立）
+		// 认证（登录限流独立 + 审计）
 		auth := api.Group("/auth")
+		auth.Use(middleware.AuditLogger(db))
 		{
 			auth.POST("/login", middleware.LoginRateLimit(), authH.Login)
 			auth.POST("/refresh", authH.Refresh)
@@ -60,8 +61,8 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			auth.GET("/me", middleware.AuthRequired(jwtManager), authH.Me)
 		}
 
-		// 客户
-		customers := api.Group("/customers", middleware.AuthRequired(jwtManager))
+		// 客户（认证 + 审计）
+		customers := api.Group("/customers", middleware.AuthRequired(jwtManager), middleware.AuditLogger(db))
 		{
 			customers.GET("", customerH.List)
 			customers.GET("/:id", customerH.GetByID)
@@ -70,8 +71,8 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			customers.POST("/:id/delete", customerH.Delete)
 		}
 
-		// 项目
-		projects := api.Group("/projects", middleware.AuthRequired(jwtManager))
+		// 项目（认证 + 审计）
+		projects := api.Group("/projects", middleware.AuthRequired(jwtManager), middleware.AuditLogger(db))
 		{
 			projects.GET("", projectH.List)
 			projects.GET("/:id", projectH.GetByID)
