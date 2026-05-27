@@ -7,6 +7,7 @@ import (
 	"github.com/miaomiaopu/ipmp-server/internal/config"
 	"github.com/miaomiaopu/ipmp-server/internal/model"
 	"github.com/miaomiaopu/ipmp-server/internal/pkg/crypto"
+	"github.com/miaomiaopu/ipmp-server/internal/pkg/version"
 	"github.com/miaomiaopu/ipmp-server/internal/router"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -57,7 +58,8 @@ func main() {
 	r := router.Setup(db, cfg)
 
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
-	log.Printf("Server starting on %s (mode=%s db=%s)", addr, cfg.Server.Mode, cfg.Database.Type)
+	log.Printf("IPMP Server %s (commit=%s built=%s)", version.Version, version.GitCommit, version.BuildTime)
+	log.Printf("Listening on %s (mode=%s db=%s)", addr, cfg.Server.Mode, cfg.Database.Type)
 	if err := r.Run(addr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}

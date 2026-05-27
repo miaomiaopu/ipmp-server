@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// Setup 初始化 Gin 路由，注册所有中间件、API 端点
+// 分层组装: repository → service → handler → route
 func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	if cfg.Server.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
