@@ -138,8 +138,8 @@ Content-Type: application/json
   "code": 0,
   "data": {
     "configured": true,
-    "provider": "openai",
-    "model": "gpt-4o",
+    "provider": "deepseek",
+    "model": "deepseek-v4-flash",
     "key_preview": "sk-****abc",
     "is_active": true
   }
@@ -152,9 +152,9 @@ Content-Type: application/json
 
 ```json
 {
-  "provider": "openai",
-  "api_key": "sk-proj-xxxx",
-  "model": "gpt-4o",
+  "provider": "deepseek",
+  "api_key": "sk-xxxx",
+  "model": "deepseek-v4-flash",
   "base_url": ""
 }
 ```

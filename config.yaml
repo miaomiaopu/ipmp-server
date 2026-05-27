@@ -1,0 +1,56 @@
+# ===========================================
+# IPMP Server 配置 (可提交版本)
+# 敏感值使用 ${ENV_VAR} 格式从环境变量读取
+# ===========================================
+
+server:
+  port: ${SERVER_PORT:8080}
+  mode: ${SERVER_MODE:debug}       # debug | release | test
+
+database:
+  type: ${DB_TYPE:postgres}        # postgres | mysql
+
+  postgres:
+    host: ${PG_HOST:localhost}
+    port: ${PG_PORT:5432}
+    user: ${PG_USER:postgres}
+    password: ${PG_PASSWORD}
+    name: ${PG_NAME:ipmp}
+    sslmode: ${PG_SSLMODE:disable}
+
+  mysql:
+    host: ${MYSQL_HOST:localhost}
+    port: ${MYSQL_PORT:3306}
+    user: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD}
+    name: ${MYSQL_NAME:ipmp}
+    charset: ${MYSQL_CHARSET:utf8mb4}
+
+jwt:
+  secret: ${JWT_SECRET}
+  refresh_secret: ${JWT_REFRESH_SECRET}
+  access_expire: 24h
+  refresh_expire: 168h              # 7 days
+
+encryption:
+  key: ${IPMP_ENCRYPTION_KEY}       # 32 bytes hex (64 chars)
+
+cors:
+  origins: ${CORS_ORIGINS:http://localhost:5173}
+
+ai:
+  provider: mock                    # mock | deepseek | openai | claude (系统级回退)
+  deepseek:
+    api_key: ${DEEPSEEK_API_KEY}
+    model: deepseek-v4-flash
+    base_url: https://api.deepseek.com
+  openai:
+    api_key: ${OPENAI_API_KEY}
+    model: gpt-4o
+  claude:
+    api_key: ${CLAUDE_API_KEY}
+    model: claude-sonnet-4-5
+
+log:
+  level: ${LOG_LEVEL:debug}         # debug | info | warn | error
+  format: ${LOG_FORMAT:console}     # console | json
