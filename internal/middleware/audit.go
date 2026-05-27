@@ -29,7 +29,7 @@ func AuditLogger(db *gorm.DB) gin.HandlerFunc {
 		var detail string
 		if c.Request.Body != nil && c.Request.ContentLength > 0 {
 			bodyBytes, _ := io.ReadAll(c.Request.Body)
-			c.Request.Body.Close()
+			_ = c.Request.Body.Close()
 			c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
 			if len(bodyBytes) > 1024 {
