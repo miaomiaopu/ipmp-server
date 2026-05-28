@@ -48,6 +48,15 @@ jobs:
             VERSION=${{ github.ref_name }}
             COMMIT=${{ github.sha }}
 
+      - name: Sync config files
+        uses: easingthemes/ssh-deploy@v6
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.TC_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.TC_HOST }}
+          REMOTE_USER: ${{ secrets.TC_USER }}
+          SOURCE: "docker-compose.yml nginx.conf"
+          TARGET: "/opt/ipmp/"
+
       - name: Deploy to cloud server
         uses: appleboy/ssh-action@v1
         with:
