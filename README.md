@@ -5,7 +5,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql)
 ![CI](https://img.shields.io/badge/CI-PG%20%7C%20MySQL%20矩阵-green?logo=githubactions)
-![Version](https://img.shields.io/badge/Version-0.0.1-blue)
+![Version](https://img.shields.io/badge/Version-0.1.0-blue)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue)
 
 IPMP（Intelligent Project Management Platform）后端服务，提供项目管理、工时统计、周报生成等 API 服务。支持 PostgreSQL / MySQL 双数据库，一行配置切换。AI 周报优先支持 DeepSeek。
@@ -114,8 +114,8 @@ ipmp-server/
 │   ├── pg/                       # PostgreSQL DDL
 │   └── mysql/                    # MySQL DDL
 ├── .github/workflows/
-│   ├── ci.yml                    # CI: PG + MySQL 矩阵测试
-│   └── deploy.yml                # CD: Docker 构建部署
+│   ├── ci.yml                    # CI: PG + MySQL 双 job 测试
+│   └── deploy-dev.yml            # CD-Dev: dev* tag 触发 → Docker 构建 → 部署
 ├── config.yaml
 ├── docker-compose.yml
 ├── Dockerfile
@@ -155,81 +155,27 @@ Handler → Service → Repository → PostgreSQL / MySQL (DB_TYPE 切换)
 
 | Pipeline | 触发 | 内容 |
 |----------|------|------|
-| **CI** | push / PR to main | PG + MySQL 矩阵测试、lint、gitleaks、build |
-| **CD** | tag `v*` / 手动 | Docker 构建 → 推送镜像 → 远程部署 |
+| **CI** | push / PR to main | PG + MySQL 双 job 独立测试、golangci-lint、gitleaks、build |
+| **CD-Dev** | tag `dev*` | Docker 构建 → ghcr.io → SSH 部署到开发服务器 |
 
-CI 矩阵确保每次提交在 PostgreSQL 和 MySQL 下均通过测试。
+## 分支策略
 
-## Docker 部署
-
-### Docker Compose 一键部署
-
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  server:
-    image: ghcr.io/miaomiaopu/ipmp-server:latest
-    restart: always
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-
-  db:
-    image: postgres:16-alpine   # 或 mysql:8.0
-    restart: always
-    environment:
-      POSTGRES_USER: ${PG_USER}
-      POSTGRES_PASSWORD: ${PG_PASSWORD}
-      POSTGRES_DB: ${PG_NAME}
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${PG_USER}"]
-      interval: 10s
-
-  nginx:
-    image: nginx:alpine
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./ssl:/etc/nginx/ssl
-      - ./www:/var/www/html
-    depends_on:
-      - server
-
-volumes:
-  db_data:
 ```
+feat/xxx → PR → CI → merge main → tag dev* → CD-Dev 部署
+```
+
+## Dev 部署
+
+详见 [docker-compose.yml](docker-compose.yml) 和 [nginx.conf](nginx.conf)。
 
 ```bash
-# 启动
-docker compose up -d
-```
+# 服务器初始化（仅一次）
+mkdir -p /opt/ipmp/www
+cp .env.example .env   # 填入数据库/JWT/加密密钥
 
-### Docker 多阶段构建
-
-```dockerfile
-# Dockerfile
-FROM golang:1.25-alpine AS builder
-WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
-COPY . .
-RUN CGO_ENABLED=0 go build -o ipmp-server cmd/server/main.go
-
-FROM alpine:3.21
-RUN apk add --no-cache ca-certificates tzdata
-COPY --from=builder /app/ipmp-server /usr/local/bin/
-EXPOSE 8080
-CMD ["ipmp-server"]
+# 触发部署
+git tag dev-0.1.0 && git push origin main --tags
+# CD-Dev 自动: Docker 构建 → push ghcr.io → rsync config → SSH 部署
 ```
 
 ## 安全
@@ -246,23 +192,18 @@ CMD ["ipmp-server"]
 
 ## 扩展计划
 
-- [x] 核心 CRUD (客户/项目/任务/需求)
-- [x] 工时统计与报表
-- [x] 多数据库支持 (PG + MySQL)
-- [x] CI/CD Pipeline
+- [x] 客户/项目 CRUD + 多数据库 + CI/CD + Dev 部署 (Phase 1)
+- [ ] 任务管理 + 需求跟踪 + 工时录入 + AI 配置 (Phase 2)
+- [ ] 周报生成 + 工时统计 + Excel 导出 (Phase 3)
 - [ ] AI 周报生成 — DeepSeek 优先 (Phase 4)
-- [ ] 文件附件上传
-- [ ] 多用户权限 (RBAC)
-- [ ] 通知系统
-- [ ] 数据导入导出
+- [ ] 文件附件 + 通知系统 + 暗色模式 + 生产 CD (Phase 5)
 
 ## 贡献指南
 
 1. Fork 本仓库
-2. 创建特性分支
+2. 从 `main` 创建 `feat/xxx` 分支
 3. 确保通过 gitleaks 扫描 + CI 矩阵测试
-4. 提交变更
-5. 创建 Pull Request
+4. 创建 Pull Request 到 main
 
 ## 许可证
 
