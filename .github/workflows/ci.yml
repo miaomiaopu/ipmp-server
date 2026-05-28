@@ -54,9 +54,7 @@ jobs:
           version: latest
 
       - name: Secret Scan
-        run: |
-          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_amd64.tar.gz | tar -xz
-          ./gitleaks detect --verbose --redact
+        uses: gitleaks/gitleaks-action@v2
 
       - name: Build
         run: go build -o ipmp-server ./cmd/server/
@@ -110,9 +108,7 @@ jobs:
           version: latest
 
       - name: Secret Scan
-        run: |
-          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_amd64.tar.gz | tar -xz
-          ./gitleaks detect --verbose --redact
+        uses: gitleaks/gitleaks-action@v2
 
       - name: Build
         run: go build -o ipmp-server ./cmd/server/
