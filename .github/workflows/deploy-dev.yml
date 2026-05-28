@@ -49,23 +49,24 @@ jobs:
             VERSION=${{ github.ref_name }}
             COMMIT=${{ github.sha }}
 
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.TC_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.TC_HOST }}" >> ~/.ssh/known_hosts
+
       - name: Sync config files
-        uses: easingthemes/ssh-deploy@v6
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.TC_SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.TC_HOST }}
-          REMOTE_USER: ${{ secrets.TC_USER }}
-          SOURCE: "docker-compose.yml nginx.conf"
-          TARGET: "/opt/ipmp/"
+        run: |
+          rsync -rlzvci -e "ssh -i ~/.ssh/deploy_key" \
+            docker-compose.yml nginx.conf \
+            ${{ secrets.TC_USER }}@${{ secrets.TC_HOST }}:/opt/ipmp/
 
       - name: Deploy to cloud server
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.TC_HOST }}
-          username: ${{ secrets.TC_USER }}
-          key: ${{ secrets.TC_SSH_KEY }}
-          script: |
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.TC_USER }}@${{ secrets.TC_HOST }} << 'REMOTE'
             cd /opt/ipmp
             docker compose pull server
             docker compose up -d --force-recreate server
             docker image prune -f
+          REMOTE
