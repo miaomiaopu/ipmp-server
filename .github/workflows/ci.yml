@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DB_TYPE: postgres
       PG_HOST: localhost
       PG_PORT: 5432
@@ -66,6 +67,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DB_TYPE: mysql
       MYSQL_HOST: 127.0.0.1
       MYSQL_PORT: 3306
