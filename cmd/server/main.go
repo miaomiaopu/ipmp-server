@@ -54,6 +54,9 @@ func main() {
 		log.Fatalf("Failed to auto migrate: %v", err)
 	}
 
+	// 初始化默认数据
+	seed(db)
+
 	// 设置路由
 	r := router.Setup(db, cfg)
 
@@ -62,6 +65,22 @@ func main() {
 	log.Printf("Listening on %s (mode=%s db=%s)", addr, cfg.Server.Mode, cfg.Database.Type)
 	if err := r.Run(addr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
+	}
+}
+
+// seed 初始化默认管理员账户
+func seed(db *gorm.DB) {
+	var count int64
+	db.Model(&model.User{}).Where("username = ?", "admin").Count(&count)
+	if count == 0 {
+		db.Create(&model.User{
+			Username:     "admin",
+			PasswordHash: "$2a$12$LJ3m4ys3GZfnYGecFX0rEOI1GvwYfe6mBLsBcEar3cGF8dQs2oPXi",
+			DisplayName:  "管理员",
+			Role:         "admin",
+			Status:       "active",
+		})
+		log.Println("Default admin user created (admin/admin123)")
 	}
 }
 
