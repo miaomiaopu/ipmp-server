@@ -1,0 +1,61 @@
+# 开发环境部署 — 推送 dev* 标签时自动部署到云服务器 + 云数据库
+# 与生产 CD (deploy.yml, 触发 v*) 独立
+name: CD-Dev
+
+on:
+  push:
+    tags: ['dev*']
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=dev
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            COMMIT=${{ github.sha }}
+
+      - name: Deploy to cloud server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.TC_HOST }}
+          username: ${{ secrets.TC_USER }}
+          key: ${{ secrets.TC_SSH_KEY }}
+          script: |
+            cd /opt/ipmp
+            docker compose pull server
+            docker compose up -d --force-recreate server
+            docker image prune -f
