@@ -9,6 +9,7 @@ import (
 	"github.com/miaomiaopu/ipmp-server/internal/pkg/crypto"
 	"github.com/miaomiaopu/ipmp-server/internal/pkg/version"
 	"github.com/miaomiaopu/ipmp-server/internal/router"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -73,9 +74,14 @@ func seed(db *gorm.DB) {
 	var count int64
 	db.Model(&model.User{}).Where("username = ?", "admin").Count(&count)
 	if count == 0 {
+		hash, err := bcrypt.GenerateFromPassword([]byte("admin123"), 12)
+		if err != nil {
+			log.Printf("Failed to hash password: %v", err)
+			return
+		}
 		db.Create(&model.User{
 			Username:     "admin",
-			PasswordHash: "$2a$12$LJ3m4ys3GZfnYGecFX0rEOI1GvwYfe6mBLsBcEar3cGF8dQs2oPXi",
+			PasswordHash: string(hash),
 			DisplayName:  "管理员",
 			Role:         "admin",
 			Status:       "active",
