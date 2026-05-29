@@ -42,10 +42,12 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	projectRepo := repository.NewProjectRepository(db)
 
 	authSvc := service.NewAuthService(userRepo, jwtManager)
+	userSvc := service.NewUserService(userRepo)
 	customerSvc := service.NewCustomerService(customerRepo)
 	projectSvc := service.NewProjectService(projectRepo)
 
 	authH := handler.NewAuthHandler(authSvc)
+	userH := handler.NewUserHandler(userSvc)
 	customerH := handler.NewCustomerHandler(customerSvc)
 	projectH := handler.NewProjectHandler(projectSvc)
 
@@ -59,6 +61,21 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			auth.POST("/refresh", authH.Refresh)
 			auth.POST("/logout", middleware.AuthRequired(jwtManager), authH.Logout)
 			auth.GET("/me", middleware.AuthRequired(jwtManager), authH.Me)
+			auth.POST("/change-password", middleware.AuthRequired(jwtManager), userH.ChangePassword)
+		}
+
+		// 用户管理（仅 admin，含审计）
+		users := api.Group("/users",
+			middleware.AuthRequired(jwtManager),
+			middleware.RequireRole("admin"),
+			middleware.AuditLogger(db))
+		{
+			users.GET("", userH.List)
+			users.GET("/:id", userH.GetByID)
+			users.POST("", userH.Create)
+			users.POST("/:id/update", userH.Update)
+			users.POST("/:id/delete", userH.Delete)
+			users.POST("/:id/reset-password", userH.ResetPassword)
 		}
 
 		// 客户（认证 + 审计，admin 不可操作）

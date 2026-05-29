@@ -1,14 +1,13 @@
 package main
 
 import (
-	"crypto/rand"
 	"fmt"
 	"log"
-	"math/big"
 
 	"github.com/miaomiaopu/ipmp-server/internal/config"
 	"github.com/miaomiaopu/ipmp-server/internal/model"
 	"github.com/miaomiaopu/ipmp-server/internal/pkg/crypto"
+	"github.com/miaomiaopu/ipmp-server/internal/pkg/utils"
 	"github.com/miaomiaopu/ipmp-server/internal/pkg/version"
 	"github.com/miaomiaopu/ipmp-server/internal/router"
 	"golang.org/x/crypto/bcrypt"
@@ -76,7 +75,7 @@ func seed(db *gorm.DB) {
 	var count int64
 	db.Model(&model.User{}).Where("username = ?", "admin").Count(&count)
 	if count == 0 {
-		password := genPassword(12)
+		password := utils.GenPassword(12)
 		hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 		if err != nil {
 			log.Printf("Failed to hash password: %v", err)
@@ -91,17 +90,6 @@ func seed(db *gorm.DB) {
 		})
 		log.Printf("*** ADMIN USER CREATED — username: admin  password: %s ***", password)
 	}
-}
-
-// genPassword 生成随机大小写+数字密码
-func genPassword(length int) string {
-	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-	b := make([]byte, length)
-	for i := range b {
-		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
-		b[i] = chars[n.Int64()]
-	}
-	return string(b)
 }
 
 func connectDB(cfg *config.Config) (*gorm.DB, error) {
