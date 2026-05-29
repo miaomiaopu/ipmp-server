@@ -51,12 +51,6 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "${{ secrets.TC_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Sync config files
-        run: |
-          rsync -rlzvci -e "ssh -i ~/.ssh/deploy_key" \
-            docker-compose.yml nginx.conf \
-            ${{ secrets.TC_USER }}@${{ secrets.TC_HOST }}:/opt/ipmp/
-
       - name: Deploy to cloud server
         run: |
           ssh -i ~/.ssh/deploy_key ${{ secrets.TC_USER }}@${{ secrets.TC_HOST }} << 'REMOTE'
