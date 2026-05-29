@@ -1,8 +1,10 @@
 package main
 
 import (
+	"crypto/rand"
 	"fmt"
 	"log"
+	"math/big"
 
 	"github.com/miaomiaopu/ipmp-server/internal/config"
 	"github.com/miaomiaopu/ipmp-server/internal/model"
@@ -74,7 +76,8 @@ func seed(db *gorm.DB) {
 	var count int64
 	db.Model(&model.User{}).Where("username = ?", "admin").Count(&count)
 	if count == 0 {
-		hash, err := bcrypt.GenerateFromPassword([]byte("admin123"), 12)
+		password := genPassword(12)
+		hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 		if err != nil {
 			log.Printf("Failed to hash password: %v", err)
 			return
@@ -86,8 +89,19 @@ func seed(db *gorm.DB) {
 			Role:         "admin",
 			Status:       "active",
 		})
-		log.Println("Default admin user created (admin/admin123)")
+		log.Printf("*** ADMIN USER CREATED — username: admin  password: %s ***", password)
 	}
+}
+
+// genPassword 生成随机大小写+数字密码
+func genPassword(length int) string {
+	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	b := make([]byte, length)
+	for i := range b {
+		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
+		b[i] = chars[n.Int64()]
+	}
+	return string(b)
 }
 
 func connectDB(cfg *config.Config) (*gorm.DB, error) {

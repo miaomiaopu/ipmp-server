@@ -61,8 +61,11 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			auth.GET("/me", middleware.AuthRequired(jwtManager), authH.Me)
 		}
 
-		// 客户（认证 + 审计）
-		customers := api.Group("/customers", middleware.AuthRequired(jwtManager), middleware.AuditLogger(db))
+		// 客户（认证 + 审计，admin 不可操作）
+		customers := api.Group("/customers",
+			middleware.AuthRequired(jwtManager),
+			middleware.RequireRole("manager", "user"),
+			middleware.AuditLogger(db))
 		{
 			customers.GET("", customerH.List)
 			customers.GET("/:id", customerH.GetByID)
@@ -71,8 +74,11 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			customers.POST("/:id/delete", customerH.Delete)
 		}
 
-		// 项目（认证 + 审计）
-		projects := api.Group("/projects", middleware.AuthRequired(jwtManager), middleware.AuditLogger(db))
+		// 项目（认证 + 审计，admin 不可操作）
+		projects := api.Group("/projects",
+			middleware.AuthRequired(jwtManager),
+			middleware.RequireRole("manager", "user"),
+			middleware.AuditLogger(db))
 		{
 			projects.GET("", projectH.List)
 			projects.GET("/:id", projectH.GetByID)
