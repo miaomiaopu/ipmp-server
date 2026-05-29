@@ -8,32 +8,29 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: ${{ secrets.CCR_REGISTRY }}
+  IMAGE_NAME: ${{ secrets.CCR_REGISTRY }}/${{ secrets.CCR_NAMESPACE }}/ipmp-server
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: dev
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Log in to ghcr.io
+      - name: Log in to CCR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ secrets.CCR_REGISTRY }}
+          username: ${{ secrets.CCR_USERNAME }}
+          password: ${{ secrets.CCR_PASSWORD }}
 
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=tag
             type=raw,value=dev
