@@ -1,0 +1,7 @@
+[allowlist]
+  description = "允许 README 和环境变量示例中的占位符"
+  paths = [
+    "README.md",
+    ".env.example",
+    "docs/",
+  ]
