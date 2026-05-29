@@ -43,6 +43,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	taskRepo := repository.NewTaskRepository(db)
 	requirementRepo := repository.NewRequirementRepository(db)
 	workLogRepo := repository.NewWorkLogRepository(db)
+	aiConfigRepo := repository.NewUserAIConfigRepository(db)
 
 	authSvc := service.NewAuthService(userRepo, jwtManager)
 	userSvc := service.NewUserService(userRepo)
@@ -51,6 +52,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	taskSvc := service.NewTaskService(taskRepo)
 	requirementSvc := service.NewRequirementService(requirementRepo)
 	workLogSvc := service.NewWorkLogService(workLogRepo)
+	aiConfigSvc := service.NewUserAIConfigService(aiConfigRepo)
 
 	authH := handler.NewAuthHandler(authSvc)
 	userH := handler.NewUserHandler(userSvc)
@@ -59,6 +61,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	taskH := handler.NewTaskHandler(taskSvc)
 	requirementH := handler.NewRequirementHandler(requirementSvc)
 	workLogH := handler.NewWorkLogHandler(workLogSvc)
+	aiConfigH := handler.NewUserAIConfigHandler(aiConfigSvc)
 
 	api := r.Group("/api/v1")
 	{
@@ -152,6 +155,16 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			wl.POST("", workLogH.Create)
 			wl.POST("/:id/update", workLogH.Update)
 			wl.POST("/:id/delete", workLogH.Delete)
+		}
+
+		// AI 配置（认证，所有用户可配置自己的 Key）
+		aiConfig := api.Group("/ai-config",
+			middleware.AuthRequired(jwtManager),
+			middleware.AuditLogger(db))
+		{
+			aiConfig.GET("", aiConfigH.Get)
+			aiConfig.POST("/update", aiConfigH.Update)
+			aiConfig.POST("/delete", aiConfigH.Delete)
 		}
 	}
 
