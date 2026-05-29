@@ -40,16 +40,25 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	userRepo := repository.NewUserRepository(db)
 	customerRepo := repository.NewCustomerRepository(db)
 	projectRepo := repository.NewProjectRepository(db)
+	taskRepo := repository.NewTaskRepository(db)
+	requirementRepo := repository.NewRequirementRepository(db)
+	workLogRepo := repository.NewWorkLogRepository(db)
 
 	authSvc := service.NewAuthService(userRepo, jwtManager)
 	userSvc := service.NewUserService(userRepo)
 	customerSvc := service.NewCustomerService(customerRepo)
 	projectSvc := service.NewProjectService(projectRepo)
+	taskSvc := service.NewTaskService(taskRepo)
+	requirementSvc := service.NewRequirementService(requirementRepo)
+	workLogSvc := service.NewWorkLogService(workLogRepo)
 
 	authH := handler.NewAuthHandler(authSvc)
 	userH := handler.NewUserHandler(userSvc)
 	customerH := handler.NewCustomerHandler(customerSvc)
 	projectH := handler.NewProjectHandler(projectSvc)
+	taskH := handler.NewTaskHandler(taskSvc)
+	requirementH := handler.NewRequirementHandler(requirementSvc)
+	workLogH := handler.NewWorkLogHandler(workLogSvc)
 
 	api := r.Group("/api/v1")
 	{
@@ -102,6 +111,47 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			projects.POST("", projectH.Create)
 			projects.POST("/:id/update", projectH.Update)
 			projects.POST("/:id/delete", projectH.Delete)
+		}
+
+		// 任务（认证 + 审计，admin 不可操作）
+		tasks := api.Group("/tasks",
+			middleware.AuthRequired(jwtManager),
+			middleware.RequireRole("manager", "user"),
+			middleware.AuditLogger(db))
+		{
+			tasks.GET("", taskH.List)
+			tasks.GET("/:id", taskH.GetByID)
+			tasks.POST("", taskH.Create)
+			tasks.POST("/:id/update", taskH.Update)
+			tasks.POST("/:id/status", taskH.UpdateStatus)
+			tasks.POST("/:id/delete", taskH.Delete)
+		}
+
+		// 需求（认证 + 审计，admin 不可操作）
+		reqs := api.Group("/requirements",
+			middleware.AuthRequired(jwtManager),
+			middleware.RequireRole("manager", "user"),
+			middleware.AuditLogger(db))
+		{
+			reqs.GET("", requirementH.List)
+			reqs.GET("/:id", requirementH.GetByID)
+			reqs.POST("", requirementH.Create)
+			reqs.POST("/:id/update", requirementH.Update)
+			reqs.POST("/:id/delete", requirementH.Delete)
+		}
+
+		// 工时（认证 + 审计，admin 不可操作）
+		wl := api.Group("/work-logs",
+			middleware.AuthRequired(jwtManager),
+			middleware.RequireRole("manager", "user"),
+			middleware.AuditLogger(db))
+		{
+			wl.GET("", workLogH.List)
+			wl.GET("/stats", workLogH.Stats)
+			wl.GET("/:id", workLogH.GetByID)
+			wl.POST("", workLogH.Create)
+			wl.POST("/:id/update", workLogH.Update)
+			wl.POST("/:id/delete", workLogH.Delete)
 		}
 	}
 
