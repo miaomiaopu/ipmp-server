@@ -55,7 +55,7 @@ jobs:
 
       - name: Secret Scan
         run: |
-          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.30.1_linux_amd64.tar.gz | tar -xz
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.30.1_linux_x64.tar.gz | tar -xz
           ./gitleaks detect --verbose --redact --no-git
 
       - name: Build
@@ -111,7 +111,7 @@ jobs:
 
       - name: Secret Scan
         run: |
-          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.30.1_linux_amd64.tar.gz | tar -xz
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.30.1_linux_x64.tar.gz | tar -xz
           ./gitleaks detect --verbose --redact --no-git
 
       - name: Build
