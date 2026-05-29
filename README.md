@@ -129,11 +129,14 @@ ipmp-server/
 
 | 模块 | 端点示例 | 说明 |
 |------|----------|------|
-| Auth | `POST /api/v1/auth/login` | 登录认证 |
-| Customers | `GET /api/v1/customers` | 客户列表 |
-| Projects | `GET /api/v1/projects` | 项目列表 |
-| Tasks | `GET /api/v1/tasks` | 任务管理 |
-| WorkLogs | `GET /api/v1/work-logs/stats` | 工时聚合统计 |
+| Auth | `POST /api/v1/auth/login` | 登录认证 + 密码修改 |
+| Users | `GET /api/v1/users` | 用户管理（admin 专属） |
+| Customers | `GET /api/v1/customers` | 客户 CRUD |
+| Projects | `GET /api/v1/projects` | 项目 CRUD |
+| Tasks | `GET /api/v1/tasks` | 任务管理 + 状态流转 |
+| Requirements | `GET /api/v1/requirements` | 需求管理 |
+| WorkLogs | `GET /api/v1/work-logs/stats` | 工时录入 + 统计聚合 |
+| AIConfig | `GET /api/v1/ai-config` | 用户独立 AI Key 配置 |
 | Reports | `POST /api/v1/weekly-reports/generate` | 生成周报 |
 | AI | `POST /api/v1/ai/generate-report` | AI 生成报告 (DeepSeek/OpenAI/Claude) |
 
@@ -193,7 +196,7 @@ git tag dev-0.1.0 && git push origin main --tags
 ## 扩展计划
 
 - [x] 客户/项目 CRUD + 多数据库 + CI/CD + Dev 部署 (Phase 1)
-- [ ] 任务管理 + 需求跟踪 + 工时录入 + AI 配置 (Phase 2)
+- [x] 用户管理 + 任务 + 需求 + 工时 + AI 配置 + admin 仪表盘 (Phase 2)
 - [ ] 周报生成 + 工时统计 + Excel 导出 (Phase 3)
 - [ ] AI 周报生成 — DeepSeek 优先 (Phase 4)
 - [ ] 文件附件 + 通知系统 + 暗色模式 + 生产 CD (Phase 5)
