@@ -45,7 +45,7 @@ CREATE TABLE projects (
     project_code    VARCHAR(32)  NOT NULL UNIQUE,
     name            VARCHAR(256) NOT NULL,
     customer_id     UUID         REFERENCES customers(id),
-    manager_id      UUID         REFERENCES users(id),
+    manager_id      UUID         ,
     start_date      DATE,
     go_live_date    DATE,
     completion_date DATE,
@@ -67,12 +67,9 @@ CREATE TABLE tasks (
     description     TEXT         NOT NULL DEFAULT '',
     project_id      UUID         REFERENCES projects(id),
     customer_id     UUID         REFERENCES customers(id),
-    assignee_id     UUID         REFERENCES users(id),
-    status          VARCHAR(32)  NOT NULL DEFAULT 'todo',
+    status          VARCHAR(32)  NOT NULL DEFAULT 'in_progress',
     priority        VARCHAR(32)  NOT NULL DEFAULT 'medium',
     due_date        DATE,
-    estimated_hours DECIMAL(8,2) NOT NULL DEFAULT 0,
-    actual_hours    DECIMAL(8,2) NOT NULL DEFAULT 0,
     created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     deleted_at      TIMESTAMPTZ
@@ -80,22 +77,22 @@ CREATE TABLE tasks (
 CREATE INDEX idx_tasks_type ON tasks(task_type) WHERE deleted_at IS NULL;
 CREATE INDEX idx_tasks_project ON tasks(project_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_tasks_customer ON tasks(customer_id) WHERE deleted_at IS NULL;
-CREATE INDEX idx_tasks_assignee ON tasks(assignee_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_tasks_status ON tasks(status) WHERE deleted_at IS NULL;
 
 -- 5. 需求表（统一需求模型）
 CREATE TABLE requirements (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    req_type        VARCHAR(32)  NOT NULL DEFAULT 'project',
-    title           VARCHAR(256) NOT NULL,
-    description     TEXT         NOT NULL DEFAULT '',
-    project_id      UUID         REFERENCES projects(id),
-    customer_id     UUID         REFERENCES customers(id),
-    priority        VARCHAR(32)  NOT NULL DEFAULT 'medium',
-    status          VARCHAR(32)  NOT NULL DEFAULT 'pending',
-    submitter       VARCHAR(128) NOT NULL DEFAULT '',
-    created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    id               UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    req_type         VARCHAR(32)  NOT NULL DEFAULT 'project',
+    requirement_code VARCHAR(32)  NOT NULL DEFAULT '',
+    title            VARCHAR(256) NOT NULL,
+    description      TEXT         NOT NULL DEFAULT '',
+    project_id       UUID         REFERENCES projects(id),
+    customer_id      UUID         REFERENCES customers(id),
+    priority         VARCHAR(32)  NOT NULL DEFAULT 'medium',
+    status           VARCHAR(32)  NOT NULL DEFAULT 'pending',
+    scheduled_date   DATE,
+    created_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     deleted_at      TIMESTAMPTZ
 );
 CREATE INDEX idx_requirements_type ON requirements(req_type) WHERE deleted_at IS NULL;
@@ -106,7 +103,7 @@ CREATE INDEX idx_requirements_customer ON requirements(customer_id) WHERE delete
 CREATE TABLE work_logs (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     task_id         UUID         REFERENCES tasks(id),
-    user_id         UUID         NOT NULL REFERENCES users(id),
+    user_id         UUID         NOT NULL ,
     project_id      UUID         REFERENCES projects(id),
     customer_id     UUID         REFERENCES customers(id),
     log_date        DATE         NOT NULL,
@@ -126,7 +123,7 @@ CREATE INDEX idx_work_logs_user_date ON work_logs(user_id, log_date) WHERE delet
 -- 7. 周报表
 CREATE TABLE weekly_reports (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id         UUID         NOT NULL REFERENCES users(id),
+    user_id         UUID         NOT NULL ,
     week_start      DATE         NOT NULL,
     week_end        DATE         NOT NULL,
     report_type     VARCHAR(32)  NOT NULL DEFAULT 'personal',
@@ -145,7 +142,7 @@ CREATE INDEX idx_weekly_reports_project ON weekly_reports(project_id) WHERE dele
 -- 8. 用户 AI 配置表
 CREATE TABLE user_ai_configs (
     id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id    UUID         NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    user_id    UUID         NOT NULL UNIQUE  ON DELETE CASCADE,
     provider   VARCHAR(32)  NOT NULL DEFAULT 'deepseek',
     api_key    TEXT         NOT NULL,
     model      VARCHAR(128) NOT NULL DEFAULT '',
