@@ -95,7 +95,7 @@ taskH := handler.NewTaskHandler(taskSvc)
 		// 客户（认证 + 审计，admin 不可操作）
 		customers := api.Group("/customers",
 			middleware.AuthRequired(jwtManager),
-			middleware.RequireRole("manager", "user"),
+			middleware.RequireRole("user"),
 			middleware.AuditLogger(db))
 		{
 			customers.GET("", customerH.List)
@@ -108,7 +108,7 @@ taskH := handler.NewTaskHandler(taskSvc)
 		// 项目（认证 + 审计，admin 不可操作）
 		projects := api.Group("/projects",
 			middleware.AuthRequired(jwtManager),
-			middleware.RequireRole("manager", "user"),
+			middleware.RequireRole("user"),
 			middleware.AuditLogger(db))
 		{
 			projects.GET("", projectH.List)
@@ -121,7 +121,7 @@ taskH := handler.NewTaskHandler(taskSvc)
 		// 任务（认证 + 审计，admin 不可操作）
 		tasks := api.Group("/tasks",
 			middleware.AuthRequired(jwtManager),
-			middleware.RequireRole("manager", "user"),
+			middleware.RequireRole("user"),
 			middleware.AuditLogger(db))
 		{
 			tasks.GET("", taskH.List)
@@ -135,7 +135,7 @@ taskH := handler.NewTaskHandler(taskSvc)
 		// 需求（认证 + 审计，admin 不可操作）
 		reqs := api.Group("/requirements",
 			middleware.AuthRequired(jwtManager),
-			middleware.RequireRole("manager", "user"),
+			middleware.RequireRole("user"),
 			middleware.AuditLogger(db))
 		{
 			reqs.GET("", requirementH.List)
@@ -148,7 +148,7 @@ taskH := handler.NewTaskHandler(taskSvc)
 		// 工时（认证 + 审计，admin 不可操作）
 		wl := api.Group("/work-logs",
 			middleware.AuthRequired(jwtManager),
-			middleware.RequireRole("manager", "user"),
+			middleware.RequireRole("user"),
 			middleware.AuditLogger(db))
 		{
 			wl.GET("", workLogH.List)

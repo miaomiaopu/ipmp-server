@@ -50,8 +50,8 @@ func (h *TaskHandler) Create(c *gin.Context) {
 	}
 	task := &model.Task{
 		TaskType: req.TaskType, Title: req.Title, Description: req.Description,
-		ProjectID: req.ProjectID, CustomerID: req.CustomerID, AssigneeID: req.AssigneeID,
-		Priority: req.Priority, EstimatedHours: req.EstimatedHours, Status: model.TaskStatusTodo,
+		ProjectID: req.ProjectID, CustomerID: req.CustomerID,
+		Priority: req.Priority, Status: model.TaskStatusInProgress,
 	}
 	if task.Priority == "" {
 		task.Priority = model.TaskPriorityMedium
@@ -85,9 +85,6 @@ func (h *TaskHandler) Update(c *gin.Context) {
 	}
 	if req.CustomerID != nil {
 		u["customer_id"] = *req.CustomerID
-	}
-	if req.AssigneeID != nil {
-		u["assignee_id"] = *req.AssigneeID
 	}
 	if req.Status != nil {
 		u["status"] = *req.Status

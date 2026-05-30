@@ -51,7 +51,7 @@ func (h *RequirementHandler) Create(c *gin.Context) {
 	m := &model.Requirement{
 		ReqType: req.ReqType, Title: req.Title, Description: req.Description,
 		ProjectID: req.ProjectID, CustomerID: req.CustomerID,
-		Priority: req.Priority, Submitter: req.Submitter, Status: "pending",
+		Priority: req.Priority, Status: "pending",
 	}
 	if m.Priority == "" {
 		m.Priority = model.TaskPriorityMedium

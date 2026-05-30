@@ -15,15 +15,10 @@ type Task struct {
 	Description    string     `gorm:"type:text" json:"description"`
 	ProjectID      *string    `gorm:"size:36" json:"project_id"`
 	CustomerID     *string    `gorm:"size:36" json:"customer_id"`
-	AssigneeID     *string    `gorm:"size:36" json:"assignee_id"`
-	Status         string     `gorm:"size:32;default:todo" json:"status"`
+	Status         string     `gorm:"size:32;default:in_progress" json:"status"`
 	Priority       string     `gorm:"size:32;default:medium" json:"priority"`
 	DueDate        *time.Time `json:"due_date"`
-	EstimatedHours float64    `gorm:"type:decimal(8,2);default:0" json:"estimated_hours"`
-	ActualHours    float64    `gorm:"type:decimal(8,2);default:0" json:"actual_hours"`
 
-	// AssigneeID → users (任务执行人)
-	Assignee *User `gorm:"foreignKey:AssigneeID" json:"assignee,omitempty"`
 	// ProjectID → projects (仅 project 任务)
 	Project *Project `gorm:"foreignKey:ProjectID" json:"project,omitempty"`
 	// CustomerID → customers (仅 customer 任务)

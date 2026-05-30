@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 // Requirement 统一需求模型，通过 ReqType 区分需求类别：
 //   - project:     项目需求，ProjectID 必填
 //   - after_sales: 售后需求，CustomerID 必填
@@ -12,9 +14,10 @@ type Requirement struct {
 	Description string  `gorm:"type:text" json:"description"`
 	ProjectID   *string `gorm:"size:36" json:"project_id"`
 	CustomerID  *string `gorm:"size:36" json:"customer_id"`
-	Priority    string  `gorm:"size:32;default:medium" json:"priority"`
-	Status      string  `gorm:"size:32;default:pending" json:"status"`
-	Submitter   string  `gorm:"size:128" json:"submitter"`
+	RequirementCode string     `gorm:"size:32" json:"requirement_code"`
+	Priority        string     `gorm:"size:32;default:medium" json:"priority"`
+	Status          string     `gorm:"size:32;default:pending" json:"status"`
+	ScheduledDate   *time.Time `json:"scheduled_date"`
 
 	// ProjectID → projects (仅 project 需求)
 	Project *Project `gorm:"foreignKey:ProjectID" json:"project,omitempty"`
