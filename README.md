@@ -5,7 +5,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql)
 ![CI](https://img.shields.io/badge/CI-PG%20%7C%20MySQL%20矩阵-green?logo=githubactions)
-![Version](https://img.shields.io/badge/Version-0.1.0-blue)
+![Version](https://img.shields.io/badge/Version-0.2.0-blue)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue)
 
 IPMP（Intelligent Project Management Platform）后端服务，提供项目管理、工时统计、周报生成等 API 服务。支持 PostgreSQL / MySQL 双数据库，一行配置切换。AI 周报优先支持 DeepSeek。
@@ -191,7 +191,7 @@ git tag dev-0.1.0 && git push origin main --tags
 - **安全响应头**: HSTS, CSP, X-Frame-Options 等
 - **方法白名单**: 仅允许 GET/POST 方法
 
-详见 [docs/SECURITY.md](docs/SECURITY.md)。
+详见 [docs/SECURITY.md](docs/SECURITY.md)、[docs/MODELS.md](docs/MODELS.md)。
 
 ## 扩展计划
 

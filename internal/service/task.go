@@ -70,16 +70,10 @@ func (s *TaskService) Update(id string, updates map[string]interface{}) error {
 			if s, ok := v.(string); ok {
 				t.CustomerID = &s
 			}
-		case "assignee_id":
-			if s, ok := v.(string); ok {
-				t.AssigneeID = &s
-			}
 		case "status":
 			t.Status = v.(string)
 		case "priority":
 			t.Priority = v.(string)
-		case "estimated_hours":
-			t.EstimatedHours = v.(float64)
 		case "due_date":
 			if s, ok := v.(string); ok && s != "" {
 				dt, _ := time.Parse("2006-01-02", s)

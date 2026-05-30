@@ -40,7 +40,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	userRepo := repository.NewUserRepository(db)
 	customerRepo := repository.NewCustomerRepository(db)
 	projectRepo := repository.NewProjectRepository(db)
-	taskRepo := repository.NewTaskRepository(db)
+taskRepo := repository.NewTaskRepository(db)
 	requirementRepo := repository.NewRequirementRepository(db)
 	workLogRepo := repository.NewWorkLogRepository(db)
 	aiConfigRepo := repository.NewUserAIConfigRepository(db)
@@ -49,7 +49,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	userSvc := service.NewUserService(userRepo)
 	customerSvc := service.NewCustomerService(customerRepo)
 	projectSvc := service.NewProjectService(projectRepo)
-	taskSvc := service.NewTaskService(taskRepo)
+taskSvc := service.NewTaskService(taskRepo)
 	requirementSvc := service.NewRequirementService(requirementRepo)
 	workLogSvc := service.NewWorkLogService(workLogRepo)
 	aiConfigSvc := service.NewUserAIConfigService(aiConfigRepo)
@@ -58,7 +58,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	userH := handler.NewUserHandler(userSvc)
 	customerH := handler.NewCustomerHandler(customerSvc)
 	projectH := handler.NewProjectHandler(projectSvc)
-	taskH := handler.NewTaskHandler(taskSvc)
+taskH := handler.NewTaskHandler(taskSvc)
 	requirementH := handler.NewRequirementHandler(requirementSvc)
 	workLogH := handler.NewWorkLogHandler(workLogSvc)
 	aiConfigH := handler.NewUserAIConfigHandler(aiConfigSvc)
@@ -87,13 +87,15 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 			users.POST("", userH.Create)
 			users.POST("/:id/update", userH.Update)
 			users.POST("/:id/delete", userH.Delete)
+			users.POST("/:id/force-delete", userH.ForceDelete)
+			users.POST("/:id/restore", userH.Restore)
 			users.POST("/:id/reset-password", userH.ResetPassword)
 		}
 
 		// 客户（认证 + 审计，admin 不可操作）
 		customers := api.Group("/customers",
 			middleware.AuthRequired(jwtManager),
-			middleware.RequireRole("manager", "user"),
+			middleware.RequireRole("user"),
 			middleware.AuditLogger(db))
 		{
 			customers.GET("", customerH.List)
@@ -106,7 +108,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		// 项目（认证 + 审计，admin 不可操作）
 		projects := api.Group("/projects",
 			middleware.AuthRequired(jwtManager),
-			middleware.RequireRole("manager", "user"),
+			middleware.RequireRole("user"),
 			middleware.AuditLogger(db))
 		{
 			projects.GET("", projectH.List)
@@ -119,7 +121,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		// 任务（认证 + 审计，admin 不可操作）
 		tasks := api.Group("/tasks",
 			middleware.AuthRequired(jwtManager),
-			middleware.RequireRole("manager", "user"),
+			middleware.RequireRole("user"),
 			middleware.AuditLogger(db))
 		{
 			tasks.GET("", taskH.List)
@@ -133,7 +135,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		// 需求（认证 + 审计，admin 不可操作）
 		reqs := api.Group("/requirements",
 			middleware.AuthRequired(jwtManager),
-			middleware.RequireRole("manager", "user"),
+			middleware.RequireRole("user"),
 			middleware.AuditLogger(db))
 		{
 			reqs.GET("", requirementH.List)
@@ -146,7 +148,7 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 		// 工时（认证 + 审计，admin 不可操作）
 		wl := api.Group("/work-logs",
 			middleware.AuthRequired(jwtManager),
-			middleware.RequireRole("manager", "user"),
+			middleware.RequireRole("user"),
 			middleware.AuditLogger(db))
 		{
 			wl.GET("", workLogH.List)

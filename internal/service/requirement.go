@@ -48,7 +48,6 @@ func (s *RequirementService) Update(id string, u map[string]interface{}) error {
 		case "description": m.Description = v.(string)
 		case "priority": m.Priority = v.(string)
 		case "status": m.Status = v.(string)
-		case "submitter": m.Submitter = v.(string)
 		}
 	}
 	m.UpdatedAt = time.Now()

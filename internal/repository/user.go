@@ -58,3 +58,11 @@ func (r *UserRepository) Update(user *model.User) error {
 func (r *UserRepository) SoftDelete(id string) error {
 	return r.db.Where("id = ?", id).Delete(&model.User{}).Error
 }
+
+func (r *UserRepository) ForceDelete(id string) error {
+	return ForceDelete(r.db, &model.User{}, id)
+}
+
+func (r *UserRepository) Restore(id string) error {
+	return Restore(r.db, &model.User{}, id)
+}

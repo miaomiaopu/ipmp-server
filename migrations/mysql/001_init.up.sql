@@ -67,39 +67,35 @@ CREATE TABLE tasks (
     description     TEXT         NOT NULL,
     project_id      CHAR(36),
     customer_id     CHAR(36),
-    assignee_id     CHAR(36),
-    status          VARCHAR(32)  NOT NULL DEFAULT 'todo',
+    status          VARCHAR(32)  NOT NULL DEFAULT 'in_progress',
     priority        VARCHAR(32)  NOT NULL DEFAULT 'medium',
     due_date        DATE,
-    estimated_hours DECIMAL(8,2) NOT NULL DEFAULT 0,
-    actual_hours    DECIMAL(8,2) NOT NULL DEFAULT 0,
     created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     deleted_at      DATETIME(3),
     FOREIGN KEY (project_id) REFERENCES projects(id),
-    FOREIGN KEY (customer_id) REFERENCES customers(id),
-    FOREIGN KEY (assignee_id) REFERENCES users(id)
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX idx_tasks_type ON tasks(task_type);
 CREATE INDEX idx_tasks_project ON tasks(project_id);
 CREATE INDEX idx_tasks_customer ON tasks(customer_id);
-CREATE INDEX idx_tasks_assignee ON tasks(assignee_id);
 CREATE INDEX idx_tasks_status ON tasks(status);
 
 -- 5. 需求表（统一需求模型）
 CREATE TABLE requirements (
-    id              CHAR(36)     PRIMARY KEY DEFAULT (UUID()),
-    req_type        VARCHAR(32)  NOT NULL DEFAULT 'project',
-    title           VARCHAR(256) NOT NULL,
-    description     TEXT         NOT NULL,
-    project_id      CHAR(36),
-    customer_id     CHAR(36),
-    priority        VARCHAR(32)  NOT NULL DEFAULT 'medium',
-    status          VARCHAR(32)  NOT NULL DEFAULT 'pending',
-    submitter       VARCHAR(128) NOT NULL DEFAULT '',
-    created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    updated_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-    deleted_at      DATETIME(3),
+    id               CHAR(36)     PRIMARY KEY DEFAULT (UUID()),
+    req_type         VARCHAR(32)  NOT NULL DEFAULT 'project',
+    requirement_code VARCHAR(32)  NOT NULL DEFAULT '',
+    title            VARCHAR(256) NOT NULL,
+    description      TEXT         NOT NULL,
+    project_id       CHAR(36),
+    customer_id      CHAR(36),
+    priority         VARCHAR(32)  NOT NULL DEFAULT 'medium',
+    status           VARCHAR(32)  NOT NULL DEFAULT 'pending',
+    scheduled_date   DATE,
+    created_at       DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    updated_at       DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    deleted_at       DATETIME(3),
     FOREIGN KEY (project_id) REFERENCES projects(id),
     FOREIGN KEY (customer_id) REFERENCES customers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
