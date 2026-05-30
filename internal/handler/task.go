@@ -141,3 +141,12 @@ func (h *TaskHandler) Delete(c *gin.Context) {
 	}
 	response.Success(c, nil)
 }
+
+func (h *TaskHandler) ForceDelete(c *gin.Context) {
+	if err := h.svc.ForceDelete(c.Param("id")); err != nil { response.InternalError(c, "failed"); return }
+	response.Success(c, nil)
+}
+func (h *TaskHandler) Restore(c *gin.Context) {
+	if err := h.svc.Restore(c.Param("id")); err != nil { response.InternalError(c, "failed"); return }
+	response.Success(c, nil)
+}

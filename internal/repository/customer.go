@@ -68,3 +68,6 @@ func (r *CustomerRepository) CountProjects(customerID string) (int64, error) {
 	err := r.db.Model(&model.Project{}).Where("customer_id = ?", customerID).Count(&count).Error
 	return count, err
 }
+
+func (r *CustomerRepository) ForceDelete(id string) error { return ForceDelete(r.db, &model.Customer{}, id) }
+func (r *CustomerRepository) Restore(id string) error { return Restore(r.db, &model.Customer{}, id) }

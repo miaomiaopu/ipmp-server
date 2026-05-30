@@ -89,3 +89,6 @@ func (s *CustomerService) Delete(id string) error {
 	}
 	return s.repo.SoftDelete(id)
 }
+
+func (s *CustomerService) ForceDelete(id string) error { return s.repo.ForceDelete(id) }
+func (s *CustomerService) Restore(id string) error { return s.repo.Restore(id) }

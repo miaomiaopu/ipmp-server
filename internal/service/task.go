@@ -107,3 +107,6 @@ func (s *TaskService) Delete(id string) error {
 	}
 	return s.repo.SoftDelete(id)
 }
+
+func (s *TaskService) ForceDelete(id string) error { return s.repo.ForceDelete(id) }
+func (s *TaskService) Restore(id string) error { return s.repo.Restore(id) }

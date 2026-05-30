@@ -64,3 +64,6 @@ func (s *RequirementService) Delete(id string) error {
 	}
 	return s.repo.SoftDelete(id)
 }
+
+func (s *RequirementService) ForceDelete(id string) error { return s.repo.ForceDelete(id) }
+func (s *RequirementService) Restore(id string) error { return s.repo.Restore(id) }

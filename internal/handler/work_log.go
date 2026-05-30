@@ -126,3 +126,12 @@ func (h *WorkLogHandler) Stats(c *gin.Context) {
 	}
 	response.Success(c, items)
 }
+
+func (h *WorkLogHandler) ForceDelete(c *gin.Context) {
+	if err := h.svc.ForceDelete(c.Param("id")); err != nil { response.InternalError(c, "failed"); return }
+	response.Success(c, nil)
+}
+func (h *WorkLogHandler) Restore(c *gin.Context) {
+	if err := h.svc.Restore(c.Param("id")); err != nil { response.InternalError(c, "failed"); return }
+	response.Success(c, nil)
+}

@@ -159,6 +159,24 @@ taskH := handler.NewTaskHandler(taskSvc)
 			wl.POST("/:id/delete", workLogH.Delete)
 		}
 
+	// Admin 数据清理（硬删除 + 恢复，仅 admin）
+		c := api.Group("/",
+			middleware.AuthRequired(jwtManager),
+			middleware.RequireRole("admin"),
+			middleware.AuditLogger(db))
+		{
+			c.POST("/customers/:id/force-delete", customerH.ForceDelete)
+			c.POST("/customers/:id/restore", customerH.Restore)
+			c.POST("/projects/:id/force-delete", projectH.ForceDelete)
+			c.POST("/projects/:id/restore", projectH.Restore)
+			c.POST("/tasks/:id/force-delete", taskH.ForceDelete)
+			c.POST("/tasks/:id/restore", taskH.Restore)
+			c.POST("/requirements/:id/force-delete", requirementH.ForceDelete)
+			c.POST("/requirements/:id/restore", requirementH.Restore)
+			c.POST("/work-logs/:id/force-delete", workLogH.ForceDelete)
+			c.POST("/work-logs/:id/restore", workLogH.Restore)
+		}
+
 		// AI 配置（认证，所有用户可配置自己的 Key）
 		aiConfig := api.Group("/ai-config",
 			middleware.AuthRequired(jwtManager),

@@ -95,3 +95,6 @@ func (s *ProjectService) Delete(id string) error {
 	}
 	return s.repo.SoftDelete(id)
 }
+
+func (s *ProjectService) ForceDelete(id string) error { return s.repo.ForceDelete(id) }
+func (s *ProjectService) Restore(id string) error { return s.repo.Restore(id) }

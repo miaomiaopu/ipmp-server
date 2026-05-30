@@ -79,3 +79,6 @@ func (r *ProjectRepository) CountRequirements(projectID string) (int64, error) {
 	err := r.db.Model(&model.Requirement{}).Where("project_id = ?", projectID).Count(&count).Error
 	return count, err
 }
+
+func (r *ProjectRepository) ForceDelete(id string) error { return ForceDelete(r.db, &model.Project{}, id) }
+func (r *ProjectRepository) Restore(id string) error { return Restore(r.db, &model.Project{}, id) }

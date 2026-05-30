@@ -74,3 +74,6 @@ func (s *WorkLogService) Delete(id string) error {
 func (s *WorkLogService) Stats(userID *string, startDate, endDate, groupBy string) ([]model.WorkLog, error) {
 	return s.repo.Stats(userID, startDate, endDate, groupBy)
 }
+
+func (s *WorkLogService) ForceDelete(id string) error { return s.repo.ForceDelete(id) }
+func (s *WorkLogService) Restore(id string) error { return s.repo.Restore(id) }

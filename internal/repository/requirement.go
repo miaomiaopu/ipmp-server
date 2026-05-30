@@ -48,3 +48,6 @@ func (r *RequirementRepository) Update(m *model.Requirement) error { return r.db
 func (r *RequirementRepository) SoftDelete(id string) error {
 	return r.db.Where("id = ?", id).Delete(&model.Requirement{}).Error
 }
+
+func (r *RequirementRepository) ForceDelete(id string) error { return ForceDelete(r.db, &model.Requirement{}, id) }
+func (r *RequirementRepository) Restore(id string) error { return Restore(r.db, &model.Requirement{}, id) }

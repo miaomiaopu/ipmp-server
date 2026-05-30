@@ -68,3 +68,6 @@ func (r *WorkLogRepository) Update(w *model.WorkLog) error { return r.db.Save(w)
 func (r *WorkLogRepository) SoftDelete(id string) error {
 	return r.db.Where("id = ?", id).Delete(&model.WorkLog{}).Error
 }
+
+func (r *WorkLogRepository) ForceDelete(id string) error { return ForceDelete(r.db, &model.WorkLog{}, id) }
+func (r *WorkLogRepository) Restore(id string) error { return Restore(r.db, &model.WorkLog{}, id) }

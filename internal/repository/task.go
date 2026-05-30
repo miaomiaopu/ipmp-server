@@ -49,3 +49,6 @@ func (r *TaskRepository) List(page, pageSize int, taskType string, projectID, cu
 func (r *TaskRepository) Create(t *model.Task) error  { return r.db.Create(t).Error }
 func (r *TaskRepository) Update(t *model.Task) error  { return r.db.Save(t).Error }
 func (r *TaskRepository) SoftDelete(id string) error  { return r.db.Where("id = ?", id).Delete(&model.Task{}).Error }
+
+func (r *TaskRepository) ForceDelete(id string) error { return ForceDelete(r.db, &model.Task{}, id) }
+func (r *TaskRepository) Restore(id string) error { return Restore(r.db, &model.Task{}, id) }
