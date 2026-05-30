@@ -191,7 +191,7 @@ git tag dev-0.1.0 && git push origin main --tags
 - **安全响应头**: HSTS, CSP, X-Frame-Options 等
 - **方法白名单**: 仅允许 GET/POST 方法
 
-详见 [docs/SECURITY.md](docs/SECURITY.md)。
+详见 [docs/SECURITY.md](docs/SECURITY.md)、[docs/MODELS.md](docs/MODELS.md)。
 
 ## 扩展计划
 

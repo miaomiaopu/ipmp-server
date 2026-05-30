@@ -266,11 +266,9 @@ Content-Type: application/json
   "description": "实现用户CRUD功能",
   "project_id": "uuid",
   "customer_id": null,
-  "assignee_id": "uuid",
-  "status": "todo",
+  "status": "in_progress",
   "priority": "high",
-  "due_date": "2026-06-15",
-  "estimated_hours": 24
+  "due_date": "2026-06-15"
 }
 ```
 
@@ -311,12 +309,13 @@ Content-Type: application/json
 ```json
 {
   "req_type": "project",
+  "requirement_code": "0001",
   "title": "支持批量导入用户",
   "description": "通过 Excel 批量导入用户数据",
   "project_id": "uuid",
   "customer_id": null,
   "priority": "medium",
-  "submitter": "客户方-李四"
+  "scheduled_date": "2026-06-20"
 }
 ```
 

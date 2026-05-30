@@ -8,6 +8,7 @@ title: IPMP Server
 
 - [API 设计文档](API.md)
 - [安全设计文档](SECURITY.md)
+- [数据模型文档](MODELS.md)
 
 ## 快速链接
 
