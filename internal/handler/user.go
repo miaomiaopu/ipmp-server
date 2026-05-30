@@ -131,6 +131,24 @@ func (h *UserHandler) Delete(c *gin.Context) {
 	response.Success(c, nil)
 }
 
+// ForceDelete POST /users/:id/force-delete
+func (h *UserHandler) ForceDelete(c *gin.Context) {
+	if err := h.svc.ForceDelete(c.Param("id")); err != nil {
+		response.InternalError(c, "failed to force delete")
+		return
+	}
+	response.Success(c, nil)
+}
+
+// Restore POST /users/:id/restore
+func (h *UserHandler) Restore(c *gin.Context) {
+	if err := h.svc.Restore(c.Param("id")); err != nil {
+		response.InternalError(c, "failed to restore")
+		return
+	}
+	response.Success(c, nil)
+}
+
 // ResetPassword POST /users/:id/reset-password
 func (h *UserHandler) ResetPassword(c *gin.Context) {
 	var req request.ResetPasswordRequest

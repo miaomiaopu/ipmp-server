@@ -97,6 +97,14 @@ func (s *UserService) Delete(id string) error {
 	return s.repo.SoftDelete(id)
 }
 
+func (s *UserService) ForceDelete(id string) error {
+	return s.repo.ForceDelete(id)
+}
+
+func (s *UserService) Restore(id string) error {
+	return s.repo.Restore(id)
+}
+
 // ChangePassword 用户修改自己的密码
 func (s *UserService) ChangePassword(userID, oldPassword, newPassword string) error {
 	user, err := s.repo.FindByID(userID)
