@@ -50,7 +50,8 @@ func (r *ProjectRepository) List(page, pageSize int, keyword, status string, cus
 	}
 	offset := (page - 1) * pageSize
 	err := query.Preload("Customer").Preload("Manager").
-		Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&projects).Error
+		Order(`CASE status WHEN 'planning' THEN go_live_date WHEN 'online' THEN completion_date ELSE '9999-12-31' END ASC`).
+		Offset(offset).Limit(pageSize).Find(&projects).Error
 	return projects, total, err
 }
 
