@@ -23,7 +23,7 @@ CREATE INDEX idx_users_role ON users(role) WHERE deleted_at IS NULL;
 -- 2. 客户表
 CREATE TABLE customers (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    customer_code   VARCHAR(32)  NOT NULL UNIQUE,
+    customer_code   VARCHAR(32)  NOT NULL,
     name            VARCHAR(256) NOT NULL,
     contact_person  VARCHAR(128) NOT NULL DEFAULT '',
     contact_phone   TEXT         NOT NULL DEFAULT '',
@@ -35,17 +35,17 @@ CREATE TABLE customers (
     updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
     deleted_at      TIMESTAMPTZ
 );
-CREATE INDEX idx_customers_code ON customers(customer_code) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX uk_customers_code_alive ON customers(customer_code) WHERE deleted_at IS NULL;
 CREATE INDEX idx_customers_status ON customers(status) WHERE deleted_at IS NULL;
 CREATE INDEX idx_customers_name ON customers(name) WHERE deleted_at IS NULL;
 
 -- 3. 项目表
 CREATE TABLE projects (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    project_code    VARCHAR(32)  NOT NULL UNIQUE,
+    project_code    VARCHAR(32)  NOT NULL,
     name            VARCHAR(256) NOT NULL,
     customer_id     UUID         REFERENCES customers(id),
-    manager_id      UUID         ,
+    manager_id      UUID         REFERENCES users(id),
     start_date      DATE,
     go_live_date    DATE,
     completion_date DATE,
@@ -58,6 +58,7 @@ CREATE TABLE projects (
 CREATE INDEX idx_projects_customer ON projects(customer_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_projects_manager ON projects(manager_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_projects_status ON projects(status) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX uk_projects_code_alive ON projects(project_code) WHERE deleted_at IS NULL;
 
 -- 4. 任务表（统一任务模型）
 CREATE TABLE tasks (
@@ -103,7 +104,7 @@ CREATE INDEX idx_requirements_customer ON requirements(customer_id) WHERE delete
 CREATE TABLE work_logs (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     task_id         UUID         REFERENCES tasks(id),
-    user_id         UUID         NOT NULL ,
+    user_id         UUID         NOT NULL REFERENCES users(id),
     project_id      UUID         REFERENCES projects(id),
     customer_id     UUID         REFERENCES customers(id),
     log_date        DATE         NOT NULL,
@@ -123,7 +124,7 @@ CREATE INDEX idx_work_logs_user_date ON work_logs(user_id, log_date) WHERE delet
 -- 7. 周报表
 CREATE TABLE weekly_reports (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id         UUID         NOT NULL ,
+    user_id         UUID         NOT NULL REFERENCES users(id),
     week_start      DATE         NOT NULL,
     week_end        DATE         NOT NULL,
     report_type     VARCHAR(32)  NOT NULL DEFAULT 'personal',
@@ -142,7 +143,7 @@ CREATE INDEX idx_weekly_reports_project ON weekly_reports(project_id) WHERE dele
 -- 8. 用户 AI 配置表
 CREATE TABLE user_ai_configs (
     id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id    UUID         NOT NULL UNIQUE  ON DELETE CASCADE,
+    user_id    UUID         NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     provider   VARCHAR(32)  NOT NULL DEFAULT 'deepseek',
     api_key    TEXT         NOT NULL,
     model      VARCHAR(128) NOT NULL DEFAULT '',

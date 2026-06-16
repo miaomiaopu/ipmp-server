@@ -21,7 +21,7 @@ CREATE INDEX idx_users_role ON users(role);
 -- 2. 客户表
 CREATE TABLE customers (
     id              CHAR(36)     PRIMARY KEY DEFAULT (UUID()),
-    customer_code   VARCHAR(32)  NOT NULL UNIQUE,
+    customer_code   VARCHAR(32)  NOT NULL,
     name            VARCHAR(256) NOT NULL,
     contact_person  VARCHAR(128) NOT NULL DEFAULT '',
     contact_phone   TEXT         NOT NULL,
@@ -31,7 +31,9 @@ CREATE TABLE customers (
     status          VARCHAR(32)  NOT NULL DEFAULT 'active',
     created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-    deleted_at      DATETIME(3)
+    deleted_at      DATETIME(3),
+    customer_code_alive VARCHAR(32) GENERATED ALWAYS AS (IF(deleted_at IS NULL, customer_code, NULL)) STORED,
+    UNIQUE KEY uk_customers_code_alive (customer_code_alive)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 CREATE INDEX idx_customers_code ON customers(customer_code);
 CREATE INDEX idx_customers_status ON customers(status);
@@ -40,7 +42,7 @@ CREATE INDEX idx_customers_name ON customers(name);
 -- 3. 项目表
 CREATE TABLE projects (
     id              CHAR(36)     PRIMARY KEY DEFAULT (UUID()),
-    project_code    VARCHAR(32)  NOT NULL UNIQUE,
+    project_code    VARCHAR(32)  NOT NULL,
     name            VARCHAR(256) NOT NULL,
     customer_id     CHAR(36),
     manager_id      CHAR(36),
@@ -52,6 +54,8 @@ CREATE TABLE projects (
     created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     updated_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     deleted_at      DATETIME(3),
+    project_code_alive VARCHAR(32) GENERATED ALWAYS AS (IF(deleted_at IS NULL, project_code, NULL)) STORED,
+    UNIQUE KEY uk_projects_code_alive (project_code_alive),
     FOREIGN KEY (customer_id) REFERENCES customers(id),
     FOREIGN KEY (manager_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
