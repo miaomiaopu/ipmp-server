@@ -31,9 +31,9 @@ const (
 	ReqTypeProject    = "project"
 	ReqTypeAfterSales = "after_sales"
 
-	ReqStatusPending    = "pending"
-	ReqStatusApproved   = "approved"
-	ReqStatusRejected   = "rejected"
-	ReqStatusInProgress = "in_progress"
-	ReqStatusDone       = "done"
+	ReqStatusPending = "pending"
+	ReqStatusTesting = "testing"
+	ReqStatusClosed  = "closed"
+	ReqStatusTested  = "tested"
+	ReqStatusOnline  = "online"
 )

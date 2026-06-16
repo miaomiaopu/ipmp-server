@@ -42,7 +42,7 @@ func (s *DashboardService) Stats(userID, role string) (map[string]interface{}, e
 	if err != nil {
 		return nil, err
 	}
-	openRequirements, err := s.repo.CountRequirements(model.ReqStatusDone)
+	openRequirements, err := s.repo.CountRequirements(model.ReqStatusPending)
 	if err != nil {
 		return nil, err
 	}

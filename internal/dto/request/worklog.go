@@ -2,6 +2,8 @@ package request
 
 type CreateWorkLogRequest struct {
 	TaskID      *string `json:"task_id"`
+	ProjectID   *string `json:"project_id"`
+	CustomerID  *string `json:"customer_id"`
 	LogDate     string  `json:"log_date" binding:"required"`
 	Hours       float64 `json:"hours" binding:"required,gte=0.5,lte=24"`
 	Description string  `json:"description"`

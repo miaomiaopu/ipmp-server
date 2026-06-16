@@ -85,6 +85,8 @@ func (s *TaskService) Update(id string, updates map[string]interface{}) error {
 			if s, ok := v.(string); ok && s != "" {
 				dt, _ := time.Parse("2006-01-02", s)
 				t.DueDate = &dt
+			} else {
+				t.DueDate = nil
 			}
 		}
 	}

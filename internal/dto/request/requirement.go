@@ -18,7 +18,7 @@ type UpdateRequirementRequest struct {
 	CustomerID      *string `json:"customer_id"`
 	RequirementCode *string `json:"requirement_code" binding:"omitempty,max=32"`
 	Priority        *string `json:"priority" binding:"omitempty,oneof=low medium high"`
-	Status          *string `json:"status" binding:"omitempty,oneof=pending approved rejected in_progress done"`
+	Status          *string `json:"status" binding:"omitempty,oneof=pending testing closed tested online"`
 	ScheduledDate   *string `json:"scheduled_date"`
 }
 

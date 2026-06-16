@@ -92,7 +92,24 @@ func (r *WorkLogRepository) FindTaskForWorkLog(taskID string) (*model.Task, erro
 	return &task, err
 }
 
+func (r *WorkLogRepository) FindProjectForWorkLog(projectID string) (*model.Project, error) {
+	var project model.Project
+	err := r.db.Unscoped().Where("id = ?", projectID).First(&project).Error
+	return &project, err
+}
+
 func (r *WorkLogRepository) Create(w *model.WorkLog) error { return r.db.Create(w).Error }
+
+func (r *WorkLogRepository) CreateWithAutoTask(w *model.WorkLog, task *model.Task) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(task).Error; err != nil {
+			return err
+		}
+		w.TaskID = &task.ID
+		return tx.Create(w).Error
+	})
+}
+
 func (r *WorkLogRepository) Update(w *model.WorkLog) error { return r.db.Save(w).Error }
 func (r *WorkLogRepository) SoftDelete(id string) error {
 	return r.db.Where("id = ?", id).Delete(&model.WorkLog{}).Error

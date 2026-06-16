@@ -85,6 +85,8 @@ func (s *RequirementService) Update(id string, u map[string]interface{}) error {
 			if value, ok := v.(string); ok && value != "" {
 				dt, _ := time.Parse("2006-01-02", value)
 				m.ScheduledDate = &dt
+			} else {
+				m.ScheduledDate = nil
 			}
 		}
 	}

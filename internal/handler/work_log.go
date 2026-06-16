@@ -56,12 +56,12 @@ func (h *WorkLogHandler) Create(c *gin.Context) {
 	w := &model.WorkLog{
 		TaskID:      req.TaskID,
 		UserID:      userID.(string),
+		ProjectID:   req.ProjectID,
+		CustomerID:  req.CustomerID,
 		LogDate:     dt,
 		Hours:       req.Hours,
 		Description: req.Description,
 	}
-	// 冗余填充 project_id/customer_id（从关联 task 推导，加速报表查询）
-	// TODO: 从 task 查询关联的 project/customer 并填充
 	if err := h.svc.Create(w); err != nil {
 		response.InternalError(c, "failed to create work log")
 		return

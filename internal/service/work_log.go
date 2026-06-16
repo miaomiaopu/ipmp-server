@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/miaomiaopu/ipmp-server/internal/model"
@@ -46,8 +47,19 @@ func (s *WorkLogService) Create(w *model.WorkLog) error {
 		if task.TaskType == model.TaskTypeProject && task.Project != nil {
 			w.CustomerID = task.Project.CustomerID
 		}
+		return s.repo.Create(w)
 	}
-	return s.repo.Create(w)
+	if w.ProjectID != nil && *w.ProjectID != "" {
+		project, err := s.repo.FindProjectForWorkLog(*w.ProjectID)
+		if err != nil {
+			return err
+		}
+		if project.CustomerID != nil && *project.CustomerID != "" {
+			w.CustomerID = project.CustomerID
+		}
+	}
+	task := buildAutoTaskForWorkLog(w)
+	return s.repo.CreateWithAutoTask(w, task)
 }
 
 func (s *WorkLogService) Update(id string, u map[string]interface{}) error {
@@ -136,3 +148,33 @@ func (s *WorkLogService) ExportCSV(userID, projectID *string, startDate, endDate
 
 func (s *WorkLogService) ForceDelete(id string) error { return s.repo.ForceDelete(id) }
 func (s *WorkLogService) Restore(id string) error     { return s.repo.Restore(id) }
+
+func buildAutoTaskForWorkLog(w *model.WorkLog) *model.Task {
+	title := strings.TrimSpace(w.Description)
+	if title == "" {
+		title = "工时"
+	}
+	if runes := []rune(title); len(runes) > 64 {
+		title = string(runes[:64])
+	}
+	title = "[" + w.LogDate.Format("2006-01-02") + "] " + title
+
+	task := &model.Task{
+		Title:       title,
+		Description: w.Description,
+		Priority:    model.TaskPriorityMedium,
+		Status:      model.TaskStatusDone,
+	}
+	switch {
+	case w.ProjectID != nil && *w.ProjectID != "":
+		task.TaskType = model.TaskTypeProject
+		task.ProjectID = w.ProjectID
+		task.CustomerID = w.CustomerID
+	case w.CustomerID != nil && *w.CustomerID != "":
+		task.TaskType = model.TaskTypeCustomer
+		task.CustomerID = w.CustomerID
+	default:
+		task.TaskType = model.TaskTypeDaily
+	}
+	return task
+}
