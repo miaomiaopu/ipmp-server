@@ -96,3 +96,19 @@ func GlobalRateLimit() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// AIRateLimit AI 生成限流：每用户每分钟最多 10 次，未认证时按 IP 兜底。
+func AIRateLimit() gin.HandlerFunc {
+	limiter := NewRateLimiter(time.Minute, 10)
+	return func(c *gin.Context) {
+		key := c.GetString("user_id")
+		if key == "" {
+			key = c.ClientIP()
+		}
+		if !limiter.Allow(key) {
+			response.TooManyRequests(c, "too many ai requests")
+			return
+		}
+		c.Next()
+	}
+}

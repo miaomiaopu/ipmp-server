@@ -1,7 +1,9 @@
 package config
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -24,7 +26,7 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Type     string       `mapstructure:"type"`
+	Type     string         `mapstructure:"type"`
 	Postgres PostgresConfig `mapstructure:"postgres"`
 	MySQL    MySQLConfig    `mapstructure:"mysql"`
 }
@@ -64,10 +66,10 @@ type MySQLConfig struct {
 }
 
 type JWTConfig struct {
-	Secret         string        `mapstructure:"secret"`
-	RefreshSecret  string        `mapstructure:"refresh_secret"`
-	AccessExpire   time.Duration `mapstructure:"access_expire"`
-	RefreshExpire  time.Duration `mapstructure:"refresh_expire"`
+	Secret        string        `mapstructure:"secret"`
+	RefreshSecret string        `mapstructure:"refresh_secret"`
+	AccessExpire  time.Duration `mapstructure:"access_expire"`
+	RefreshExpire time.Duration `mapstructure:"refresh_expire"`
 }
 
 type EncryptionConfig struct {
@@ -83,7 +85,7 @@ func (c CORSConfig) AllowedOrigins() []string {
 }
 
 type AIConfig struct {
-	Provider string          `mapstructure:"provider"`
+	Provider string           `mapstructure:"provider"`
 	DeepSeek AIProviderConfig `mapstructure:"deepseek"`
 	OpenAI   AIProviderConfig `mapstructure:"openai"`
 	Claude   AIProviderConfig `mapstructure:"claude"`
@@ -101,6 +103,10 @@ type LogConfig struct {
 }
 
 func Load() (*Config, error) {
+	if err := loadDotEnv(".env"); err != nil {
+		return nil, err
+	}
+
 	v := viper.New()
 	v.SetConfigName("config")
 	v.SetConfigType("yaml")
@@ -187,4 +193,44 @@ func Load() (*Config, error) {
 	cfg.JWT.RefreshExpire = refreshExpire
 
 	return &cfg, nil
+}
+
+func loadDotEnv(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("read .env: %w", err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		line = strings.TrimPrefix(line, "export ")
+		key, value, ok := strings.Cut(line, "=")
+		if !ok {
+			continue
+		}
+		key = strings.TrimSpace(key)
+		if key == "" {
+			continue
+		}
+		if _, exists := os.LookupEnv(key); exists {
+			continue
+		}
+		value = strings.TrimSpace(value)
+		value = strings.Trim(value, `"'`)
+		if err := os.Setenv(key, value); err != nil {
+			return fmt.Errorf("set .env key %s: %w", key, err)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("scan .env: %w", err)
+	}
+	return nil
 }

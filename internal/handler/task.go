@@ -95,9 +95,6 @@ func (h *TaskHandler) Update(c *gin.Context) {
 	if req.DueDate != nil {
 		u["due_date"] = *req.DueDate
 	}
-	if req.EstimatedHours != nil {
-		u["estimated_hours"] = *req.EstimatedHours
-	}
 	if len(u) == 0 {
 		response.BadRequest(c, "no fields to update")
 		return
@@ -143,10 +140,16 @@ func (h *TaskHandler) Delete(c *gin.Context) {
 }
 
 func (h *TaskHandler) ForceDelete(c *gin.Context) {
-	if err := h.svc.ForceDelete(c.Param("id")); err != nil { response.InternalError(c, "failed"); return }
+	if err := h.svc.ForceDelete(c.Param("id")); err != nil {
+		response.InternalError(c, "failed")
+		return
+	}
 	response.Success(c, nil)
 }
 func (h *TaskHandler) Restore(c *gin.Context) {
-	if err := h.svc.Restore(c.Param("id")); err != nil { response.InternalError(c, "failed"); return }
+	if err := h.svc.Restore(c.Param("id")); err != nil {
+		response.InternalError(c, "failed")
+		return
+	}
 	response.Success(c, nil)
 }

@@ -21,6 +21,8 @@ func (h *WorkLogHandler) List(c *gin.Context) {
 		return
 	}
 	page, pageSize := q.Normalize()
+	currentUserID := c.GetString("user_id")
+	q.UserID = &currentUserID
 	items, total, err := h.svc.List(page, pageSize, q.UserID, q.ProjectID, q.StartDate, q.EndDate)
 	if err != nil {
 		response.InternalError(c, "failed to list work logs")
@@ -111,15 +113,11 @@ func (h *WorkLogHandler) Delete(c *gin.Context) {
 }
 
 func (h *WorkLogHandler) Stats(c *gin.Context) {
-	userID := c.Query("user_id")
+	userID := c.GetString("user_id")
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
 	groupBy := c.Query("group_by")
-	var uid *string
-	if userID != "" {
-		uid = &userID
-	}
-	items, err := h.svc.Stats(uid, startDate, endDate, groupBy)
+	items, err := h.svc.Stats(&userID, startDate, endDate, groupBy)
 	if err != nil {
 		response.InternalError(c, "failed to get stats")
 		return
@@ -127,11 +125,36 @@ func (h *WorkLogHandler) Stats(c *gin.Context) {
 	response.Success(c, items)
 }
 
+func (h *WorkLogHandler) Export(c *gin.Context) {
+	userID := c.GetString("user_id")
+	startDate := c.Query("start_date")
+	endDate := c.Query("end_date")
+	projectID := c.Query("project_id")
+	var pid *string
+	if projectID != "" {
+		pid = &projectID
+	}
+	content, err := h.svc.ExportCSV(&userID, pid, startDate, endDate)
+	if err != nil {
+		response.InternalError(c, "failed to export work logs")
+		return
+	}
+	c.Header("Content-Type", "text/csv; charset=utf-8")
+	c.Header("Content-Disposition", `attachment; filename="work_logs.csv"`)
+	c.Data(200, "text/csv; charset=utf-8", content)
+}
+
 func (h *WorkLogHandler) ForceDelete(c *gin.Context) {
-	if err := h.svc.ForceDelete(c.Param("id")); err != nil { response.InternalError(c, "failed"); return }
+	if err := h.svc.ForceDelete(c.Param("id")); err != nil {
+		response.InternalError(c, "failed")
+		return
+	}
 	response.Success(c, nil)
 }
 func (h *WorkLogHandler) Restore(c *gin.Context) {
-	if err := h.svc.Restore(c.Param("id")); err != nil { response.InternalError(c, "failed"); return }
+	if err := h.svc.Restore(c.Param("id")); err != nil {
+		response.InternalError(c, "failed")
+		return
+	}
 	response.Success(c, nil)
 }

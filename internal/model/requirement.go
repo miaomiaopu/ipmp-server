@@ -9,11 +9,11 @@ import "time"
 // Service 层负责根据 ReqType 校验必填约束
 type Requirement struct {
 	BaseModel
-	ReqType     string  `gorm:"size:32;default:project" json:"req_type"`
-	Title       string  `gorm:"size:256" json:"title"`
-	Description string  `gorm:"type:text" json:"description"`
-	ProjectID   *string `gorm:"size:36" json:"project_id"`
-	CustomerID  *string `gorm:"size:36" json:"customer_id"`
+	ReqType         string     `gorm:"size:32;default:project" json:"req_type"`
+	Title           string     `gorm:"size:256" json:"title"`
+	Description     string     `gorm:"type:text" json:"description"`
+	ProjectID       *string    `gorm:"size:36" json:"project_id"`
+	CustomerID      *string    `gorm:"size:36" json:"customer_id"`
 	RequirementCode string     `gorm:"size:32" json:"requirement_code"`
 	Priority        string     `gorm:"size:32;default:medium" json:"priority"`
 	Status          string     `gorm:"size:32;default:pending" json:"status"`
@@ -31,7 +31,9 @@ const (
 	ReqTypeProject    = "project"
 	ReqTypeAfterSales = "after_sales"
 
-	ReqStatusPending  = "pending"
-	ReqStatusApproved = "approved"
-	ReqStatusRejected = "rejected"
+	ReqStatusPending    = "pending"
+	ReqStatusApproved   = "approved"
+	ReqStatusRejected   = "rejected"
+	ReqStatusInProgress = "in_progress"
+	ReqStatusDone       = "done"
 )

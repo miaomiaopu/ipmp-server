@@ -20,7 +20,7 @@ type TaskService struct{ repo *repository.TaskRepository }
 func NewTaskService(repo *repository.TaskRepository) *TaskService { return &TaskService{repo: repo} }
 
 func (s *TaskService) List(page, pageSize int, query request.TaskQuery) ([]model.Task, int64, error) {
-	return s.repo.List(page, pageSize, query.TaskType, query.ProjectID, query.CustomerID, query.AssigneeID, query.Status, query.Keyword)
+	return s.repo.List(page, pageSize, query.TaskType, query.ProjectID, query.CustomerID, query.Status, query.DueBefore, query.Keyword)
 }
 
 func (s *TaskService) GetByID(id string) (*model.Task, error) {
@@ -44,6 +44,13 @@ func (s *TaskService) Create(task *model.Task) error {
 		if task.CustomerID == nil || *task.CustomerID == "" {
 			return ErrInvalidTaskType
 		}
+		task.ProjectID = nil
+	case model.TaskTypeDaily:
+		if task.ProjectID != nil || task.CustomerID != nil {
+			return ErrInvalidTaskType
+		}
+	default:
+		return ErrInvalidTaskType
 	}
 	return s.repo.Create(task)
 }
@@ -109,4 +116,4 @@ func (s *TaskService) Delete(id string) error {
 }
 
 func (s *TaskService) ForceDelete(id string) error { return s.repo.ForceDelete(id) }
-func (s *TaskService) Restore(id string) error { return s.repo.Restore(id) }
+func (s *TaskService) Restore(id string) error     { return s.repo.Restore(id) }

@@ -5,7 +5,7 @@ package model
 // Status: active(正常) / inactive(停用)
 type Customer struct {
 	BaseModel
-	CustomerCode  string         `gorm:"uniqueIndex;size:32" json:"customer_code"`
+	CustomerCode  string         `gorm:"size:32;index" json:"customer_code"`
 	Name          string         `gorm:"size:256" json:"name"`
 	ContactPerson string         `gorm:"size:128" json:"contact_person"`
 	ContactPhone  EncryptedField `gorm:"type:text" json:"contact_phone"`

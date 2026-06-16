@@ -1,7 +1,7 @@
 package model
 
 // User 系统用户
-// 角色分 admin(管理员) / manager(项目经理) / user(普通用户)
+// 角色分 admin(管理员) / user(普通用户)
 // Email/Phone 使用 EncryptedField 加密存储，JSON 自动掩码
 // PasswordHash 为 bcrypt 哈希，JSON 序列化时隐藏
 type User struct {
@@ -18,7 +18,9 @@ type User struct {
 func (User) TableName() string { return "users" }
 
 const (
-	RoleAdmin   = "admin"
-	RoleManager = "manager"
-	RoleUser    = "user"
+	RoleAdmin = "admin"
+	RoleUser  = "user"
+
+	UserStatusActive   = "active"
+	UserStatusDisabled = "disabled"
 )

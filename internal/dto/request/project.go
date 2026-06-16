@@ -4,12 +4,12 @@ package request
 type CreateProjectRequest struct {
 	ProjectCode    string  `json:"project_code" binding:"required,min=1,max=32"`
 	Name           string  `json:"name" binding:"required,min=1,max=256"`
-	CustomerID     *string `json:"customer_id" binding:"omitempty,uuid"`
+	CustomerID     *string `json:"customer_id" binding:"required,uuid"`
 	ManagerID      *string `json:"manager_id" binding:"omitempty,uuid"`
 	StartDate      *string `json:"start_date" binding:"omitempty"`
 	GoLiveDate     *string `json:"go_live_date" binding:"omitempty"`
 	CompletionDate *string `json:"completion_date" binding:"omitempty"`
-	Status         string  `json:"status" binding:"omitempty,oneof=planning in_progress completed suspended"`
+	Status         string  `json:"status" binding:"omitempty,oneof=planning in_progress online completed"`
 	Description    string  `json:"description" binding:"omitempty,max=4096"`
 }
 
@@ -22,7 +22,7 @@ type UpdateProjectRequest struct {
 	StartDate      *string `json:"start_date" binding:"omitempty"`
 	GoLiveDate     *string `json:"go_live_date" binding:"omitempty"`
 	CompletionDate *string `json:"completion_date" binding:"omitempty"`
-	Status         *string `json:"status" binding:"omitempty,oneof=planning in_progress completed suspended"`
+	Status         *string `json:"status" binding:"omitempty,oneof=planning in_progress online completed"`
 	Description    *string `json:"description" binding:"omitempty,max=4096"`
 }
 

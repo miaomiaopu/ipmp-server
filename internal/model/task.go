@@ -10,14 +10,14 @@ import "time"
 // 关联字段均为可空(*string)，Service 层负责根据 TaskType 校验必填约束
 type Task struct {
 	BaseModel
-	TaskType       string     `gorm:"size:32;default:project" json:"task_type"`
-	Title          string     `gorm:"size:256" json:"title"`
-	Description    string     `gorm:"type:text" json:"description"`
-	ProjectID      *string    `gorm:"size:36" json:"project_id"`
-	CustomerID     *string    `gorm:"size:36" json:"customer_id"`
-	Status         string     `gorm:"size:32;default:in_progress" json:"status"`
-	Priority       string     `gorm:"size:32;default:medium" json:"priority"`
-	DueDate        *time.Time `json:"due_date"`
+	TaskType    string     `gorm:"size:32;default:project" json:"task_type"`
+	Title       string     `gorm:"size:256" json:"title"`
+	Description string     `gorm:"type:text" json:"description"`
+	ProjectID   *string    `gorm:"size:36" json:"project_id"`
+	CustomerID  *string    `gorm:"size:36" json:"customer_id"`
+	Status      string     `gorm:"size:32;default:in_progress" json:"status"`
+	Priority    string     `gorm:"size:32;default:medium" json:"priority"`
+	DueDate     *time.Time `json:"due_date"`
 
 	// ProjectID → projects (仅 project 任务)
 	Project *Project `gorm:"foreignKey:ProjectID" json:"project,omitempty"`
@@ -32,7 +32,6 @@ const (
 	TaskTypeCustomer = "customer"
 	TaskTypeDaily    = "daily"
 
-	TaskStatusTodo       = "todo"
 	TaskStatusInProgress = "in_progress"
 	TaskStatusDone       = "done"
 

@@ -7,7 +7,9 @@ import (
 
 type RequirementRepository struct{ db *gorm.DB }
 
-func NewRequirementRepository(db *gorm.DB) *RequirementRepository { return &RequirementRepository{db: db} }
+func NewRequirementRepository(db *gorm.DB) *RequirementRepository {
+	return &RequirementRepository{db: db}
+}
 
 func (r *RequirementRepository) FindByID(id string) (*model.Requirement, error) {
 	var m model.Requirement
@@ -15,7 +17,7 @@ func (r *RequirementRepository) FindByID(id string) (*model.Requirement, error) 
 	return &m, err
 }
 
-func (r *RequirementRepository) List(page, pageSize int, reqType string, projectID, customerID *string, status, keyword string) ([]model.Requirement, int64, error) {
+func (r *RequirementRepository) List(page, pageSize int, reqType string, projectID, customerID *string, scheduledDate, status, keyword string) ([]model.Requirement, int64, error) {
 	var items []model.Requirement
 	var total int64
 	q := r.db.Model(&model.Requirement{})
@@ -27,6 +29,9 @@ func (r *RequirementRepository) List(page, pageSize int, reqType string, project
 	}
 	if customerID != nil && *customerID != "" {
 		q = q.Where("customer_id = ?", *customerID)
+	}
+	if scheduledDate != "" {
+		q = q.Where("scheduled_date = ?", scheduledDate)
 	}
 	if status != "" {
 		q = q.Where("status = ?", status)
@@ -49,5 +54,9 @@ func (r *RequirementRepository) SoftDelete(id string) error {
 	return r.db.Where("id = ?", id).Delete(&model.Requirement{}).Error
 }
 
-func (r *RequirementRepository) ForceDelete(id string) error { return ForceDelete(r.db, &model.Requirement{}, id) }
-func (r *RequirementRepository) Restore(id string) error { return Restore(r.db, &model.Requirement{}, id) }
+func (r *RequirementRepository) ForceDelete(id string) error {
+	return ForceDelete(r.db, &model.Requirement{}, id)
+}
+func (r *RequirementRepository) Restore(id string) error {
+	return Restore(r.db, &model.Requirement{}, id)
+}

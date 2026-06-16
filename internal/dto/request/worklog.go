@@ -24,7 +24,11 @@ type WorkLogQuery struct {
 
 func (q *WorkLogQuery) Normalize() (int, int) {
 	p, ps := q.Page, q.PageSize
-	if p <= 0 { p = 1 }
-	if ps <= 0 || ps > 100 { ps = 20 }
+	if p <= 0 {
+		p = 1
+	}
+	if ps <= 0 || ps > 100 {
+		ps = 20
+	}
 	return p, ps
 }

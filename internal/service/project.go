@@ -79,6 +79,21 @@ func (s *ProjectService) Update(id string, updates map[string]interface{}) error
 			project.Status = value.(string)
 		case "description":
 			project.Description = value.(string)
+		case "start_date":
+			if v, ok := value.(string); ok && v != "" {
+				dt, _ := time.Parse("2006-01-02", v)
+				project.StartDate = &dt
+			}
+		case "go_live_date":
+			if v, ok := value.(string); ok && v != "" {
+				dt, _ := time.Parse("2006-01-02", v)
+				project.GoLiveDate = &dt
+			}
+		case "completion_date":
+			if v, ok := value.(string); ok && v != "" {
+				dt, _ := time.Parse("2006-01-02", v)
+				project.CompletionDate = &dt
+			}
 		}
 	}
 	project.UpdatedAt = time.Now()
@@ -97,4 +112,4 @@ func (s *ProjectService) Delete(id string) error {
 }
 
 func (s *ProjectService) ForceDelete(id string) error { return s.repo.ForceDelete(id) }
-func (s *ProjectService) Restore(id string) error { return s.repo.Restore(id) }
+func (s *ProjectService) Restore(id string) error     { return s.repo.Restore(id) }

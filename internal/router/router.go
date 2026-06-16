@@ -40,28 +40,36 @@ func Setup(db *gorm.DB, cfg *config.Config) *gin.Engine {
 	userRepo := repository.NewUserRepository(db)
 	customerRepo := repository.NewCustomerRepository(db)
 	projectRepo := repository.NewProjectRepository(db)
-taskRepo := repository.NewTaskRepository(db)
+	taskRepo := repository.NewTaskRepository(db)
 	requirementRepo := repository.NewRequirementRepository(db)
 	workLogRepo := repository.NewWorkLogRepository(db)
 	aiConfigRepo := repository.NewUserAIConfigRepository(db)
+	weeklyReportRepo := repository.NewWeeklyReportRepository(db)
+	dashboardRepo := repository.NewDashboardRepository(db)
 
 	authSvc := service.NewAuthService(userRepo, jwtManager)
 	userSvc := service.NewUserService(userRepo)
 	customerSvc := service.NewCustomerService(customerRepo)
 	projectSvc := service.NewProjectService(projectRepo)
-taskSvc := service.NewTaskService(taskRepo)
+	taskSvc := service.NewTaskService(taskRepo)
 	requirementSvc := service.NewRequirementService(requirementRepo)
 	workLogSvc := service.NewWorkLogService(workLogRepo)
 	aiConfigSvc := service.NewUserAIConfigService(aiConfigRepo)
+	weeklyReportSvc := service.NewWeeklyReportService(weeklyReportRepo, workLogRepo)
+	dashboardSvc := service.NewDashboardService(dashboardRepo, workLogRepo)
+	aiSvc := service.NewAIService(cfg.AI, aiConfigRepo)
 
 	authH := handler.NewAuthHandler(authSvc)
 	userH := handler.NewUserHandler(userSvc)
 	customerH := handler.NewCustomerHandler(customerSvc)
 	projectH := handler.NewProjectHandler(projectSvc)
-taskH := handler.NewTaskHandler(taskSvc)
+	taskH := handler.NewTaskHandler(taskSvc)
 	requirementH := handler.NewRequirementHandler(requirementSvc)
 	workLogH := handler.NewWorkLogHandler(workLogSvc)
 	aiConfigH := handler.NewUserAIConfigHandler(aiConfigSvc)
+	weeklyReportH := handler.NewWeeklyReportHandler(weeklyReportSvc)
+	dashboardH := handler.NewDashboardHandler(dashboardSvc)
+	aiH := handler.NewAIHandler(aiSvc)
 
 	api := r.Group("/api/v1")
 	{
@@ -153,13 +161,14 @@ taskH := handler.NewTaskHandler(taskSvc)
 		{
 			wl.GET("", workLogH.List)
 			wl.GET("/stats", workLogH.Stats)
+			wl.GET("/export", workLogH.Export)
 			wl.GET("/:id", workLogH.GetByID)
 			wl.POST("", workLogH.Create)
 			wl.POST("/:id/update", workLogH.Update)
 			wl.POST("/:id/delete", workLogH.Delete)
 		}
 
-	// Admin 数据清理（硬删除 + 恢复，仅 admin）
+		// Admin 数据清理（硬删除 + 恢复，仅 admin）
 		c := api.Group("/",
 			middleware.AuthRequired(jwtManager),
 			middleware.RequireRole("admin"),
@@ -185,6 +194,37 @@ taskH := handler.NewTaskHandler(taskSvc)
 			aiConfig.GET("", aiConfigH.Get)
 			aiConfig.POST("/update", aiConfigH.Update)
 			aiConfig.POST("/delete", aiConfigH.Delete)
+		}
+
+		// Dashboard（实时聚合，不落库）
+		dashboard := api.Group("/dashboard",
+			middleware.AuthRequired(jwtManager))
+		{
+			dashboard.GET("/stats", dashboardH.Stats)
+			dashboard.GET("/this-week", dashboardH.ThisWeek)
+		}
+
+		// 周报
+		weeklyReports := api.Group("/weekly-reports",
+			middleware.AuthRequired(jwtManager),
+			middleware.AuditLogger(db))
+		{
+			weeklyReports.GET("", weeklyReportH.List)
+			weeklyReports.GET("/:id", weeklyReportH.GetByID)
+			weeklyReports.POST("/generate", weeklyReportH.Generate)
+			weeklyReports.POST("/:id/update", weeklyReportH.Update)
+			weeklyReports.POST("/:id/review", weeklyReportH.Review)
+			weeklyReports.POST("/:id/finalize", weeklyReportH.Finalize)
+		}
+
+		// AI 生成
+		ai := api.Group("/ai",
+			middleware.AuthRequired(jwtManager),
+			middleware.AIRateLimit(),
+			middleware.AuditLogger(db))
+		{
+			ai.POST("/generate-report", aiH.GenerateReport)
+			ai.POST("/summarize", aiH.Summarize)
 		}
 	}
 

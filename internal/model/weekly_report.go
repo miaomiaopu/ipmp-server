@@ -30,6 +30,8 @@ const (
 	ReportTypePersonal = "personal"
 	ReportTypeProject  = "project"
 
-	ReportStatusDraft = "draft"
-	ReportStatusFinal = "final"
+	ReportStatusDraft     = "draft"
+	ReportStatusSubmitted = "submitted"
+	ReportStatusReviewed  = "reviewed"
+	ReportStatusFinal     = "final"
 )

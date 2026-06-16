@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/miaomiaopu/ipmp-server/internal/dto/request"
 	"github.com/miaomiaopu/ipmp-server/internal/model"
@@ -21,7 +23,7 @@ func (h *RequirementHandler) List(c *gin.Context) {
 		return
 	}
 	page, pageSize := q.Normalize()
-	items, total, err := h.svc.List(page, pageSize, q.ReqType, q.ProjectID, q.CustomerID, q.Status, q.Keyword)
+	items, total, err := h.svc.List(page, pageSize, q.ReqType, q.ProjectID, q.CustomerID, q.ScheduledDate, q.Status, q.Keyword)
 	if err != nil {
 		response.InternalError(c, "failed to list requirements")
 		return
@@ -51,13 +53,18 @@ func (h *RequirementHandler) Create(c *gin.Context) {
 	m := &model.Requirement{
 		ReqType: req.ReqType, Title: req.Title, Description: req.Description,
 		ProjectID: req.ProjectID, CustomerID: req.CustomerID,
-		Priority: req.Priority, Status: "pending",
+		RequirementCode: req.RequirementCode,
+		Priority:        req.Priority, Status: model.ReqStatusPending,
 	}
 	if m.Priority == "" {
 		m.Priority = model.TaskPriorityMedium
 	}
+	if req.ScheduledDate != nil && *req.ScheduledDate != "" {
+		dt, _ := time.Parse("2006-01-02", *req.ScheduledDate)
+		m.ScheduledDate = &dt
+	}
 	if err := h.svc.Create(m); err != nil {
-		response.InternalError(c, "failed to create requirement")
+		response.BadRequest(c, err.Error())
 		return
 	}
 	response.Success(c, m)
@@ -76,14 +83,23 @@ func (h *RequirementHandler) Update(c *gin.Context) {
 	if req.Description != nil {
 		u["description"] = *req.Description
 	}
+	if req.ProjectID != nil {
+		u["project_id"] = *req.ProjectID
+	}
+	if req.CustomerID != nil {
+		u["customer_id"] = *req.CustomerID
+	}
+	if req.RequirementCode != nil {
+		u["requirement_code"] = *req.RequirementCode
+	}
 	if req.Priority != nil {
 		u["priority"] = *req.Priority
 	}
 	if req.Status != nil {
 		u["status"] = *req.Status
 	}
-	if req.Submitter != nil {
-		u["submitter"] = *req.Submitter
+	if req.ScheduledDate != nil {
+		u["scheduled_date"] = *req.ScheduledDate
 	}
 	if len(u) == 0 {
 		response.BadRequest(c, "no fields to update")
@@ -113,10 +129,16 @@ func (h *RequirementHandler) Delete(c *gin.Context) {
 }
 
 func (h *RequirementHandler) ForceDelete(c *gin.Context) {
-	if err := h.svc.ForceDelete(c.Param("id")); err != nil { response.InternalError(c, "failed"); return }
+	if err := h.svc.ForceDelete(c.Param("id")); err != nil {
+		response.InternalError(c, "failed")
+		return
+	}
 	response.Success(c, nil)
 }
 func (h *RequirementHandler) Restore(c *gin.Context) {
-	if err := h.svc.Restore(c.Param("id")); err != nil { response.InternalError(c, "failed"); return }
+	if err := h.svc.Restore(c.Param("id")); err != nil {
+		response.InternalError(c, "failed")
+		return
+	}
 	response.Success(c, nil)
 }

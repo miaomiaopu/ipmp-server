@@ -1,7 +1,10 @@
 package service
 
 import (
+	"bytes"
+	"encoding/csv"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/miaomiaopu/ipmp-server/internal/model"
@@ -32,7 +35,20 @@ func (s *WorkLogService) GetByID(id string) (*model.WorkLog, error) {
 	return w, nil
 }
 
-func (s *WorkLogService) Create(w *model.WorkLog) error { return s.repo.Create(w) }
+func (s *WorkLogService) Create(w *model.WorkLog) error {
+	if w.TaskID != nil && *w.TaskID != "" {
+		task, err := s.repo.FindTaskForWorkLog(*w.TaskID)
+		if err != nil {
+			return err
+		}
+		w.ProjectID = task.ProjectID
+		w.CustomerID = task.CustomerID
+		if task.TaskType == model.TaskTypeProject && task.Project != nil {
+			w.CustomerID = task.Project.CustomerID
+		}
+	}
+	return s.repo.Create(w)
+}
 
 func (s *WorkLogService) Update(id string, u map[string]interface{}) error {
 	w, err := s.repo.FindByID(id)
@@ -75,5 +91,48 @@ func (s *WorkLogService) Stats(userID *string, startDate, endDate, groupBy strin
 	return s.repo.Stats(userID, startDate, endDate, groupBy)
 }
 
+func (s *WorkLogService) ExportCSV(userID, projectID *string, startDate, endDate string) ([]byte, error) {
+	items, err := s.repo.FindForReport(userID, projectID, startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
+	var buf bytes.Buffer
+	buf.WriteString("\xEF\xBB\xBF")
+	writer := csv.NewWriter(&buf)
+	if err := writer.Write([]string{"日期", "用户ID", "任务", "项目", "客户", "工时", "描述"}); err != nil {
+		return nil, err
+	}
+	for _, item := range items {
+		taskName := ""
+		if item.Task != nil {
+			taskName = item.Task.Title
+		}
+		projectName := ""
+		if item.Project != nil {
+			projectName = item.Project.Name
+		}
+		customerName := ""
+		if item.Customer != nil {
+			customerName = item.Customer.Name
+		}
+		if err := writer.Write([]string{
+			item.LogDate.Format("2006-01-02"),
+			item.UserID,
+			taskName,
+			projectName,
+			customerName,
+			strconv.FormatFloat(item.Hours, 'f', -1, 64),
+			item.Description,
+		}); err != nil {
+			return nil, err
+		}
+	}
+	writer.Flush()
+	if err := writer.Error(); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
 func (s *WorkLogService) ForceDelete(id string) error { return s.repo.ForceDelete(id) }
-func (s *WorkLogService) Restore(id string) error { return s.repo.Restore(id) }
+func (s *WorkLogService) Restore(id string) error     { return s.repo.Restore(id) }
