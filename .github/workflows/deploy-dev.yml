@@ -1,61 +1,10 @@
-# 开发环境部署 — 推送 dev* 标签时自动部署到云服务器 + 云数据库
-# 与生产 CD (deploy.yml, 触发 v*) 独立
-name: CD-Dev
+name: CD-Dev Disabled
 
 on:
-  push:
-    tags: ['dev*']
   workflow_dispatch:
 
-env:
-  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/ipmp-server
-
 jobs:
-  deploy:
+  disabled:
     runs-on: ubuntu-latest
-    environment: dev
-
     steps:
-      - uses: actions/checkout@v6
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=tag
-            type=raw,value=dev
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            VERSION=${{ github.ref_name }}
-            COMMIT=${{ github.sha }}
-
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.TC_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.TC_HOST }}" >> ~/.ssh/known_hosts
-
-      - name: Deploy to cloud server
-        run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.TC_USER }}@${{ secrets.TC_HOST }} << 'REMOTE'
-            cd /opt/ipmp
-            docker compose pull server
-            docker compose up -d --force-recreate server
-            docker image prune -f
-          REMOTE
+      - run: echo "CD-Dev is disabled; local smoke validation is required before deployment."

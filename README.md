@@ -4,7 +4,7 @@
 ![Gin](https://img.shields.io/badge/Gin-1.x-0099FF?logo=go)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql)
-![CI](https://img.shields.io/badge/CI-PG%20%7C%20MySQL%20矩阵-green?logo=githubactions)
+![CI](https://img.shields.io/badge/CI-build%20only-green?logo=githubactions)
 ![Version](https://img.shields.io/badge/Version-0.2.0-blue)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue)
 
@@ -30,11 +30,11 @@ IPMP（Intelligent Project Management Platform）后端服务，提供项目管�
 
 - **多数据库支持**: PostgreSQL / MySQL 一行配置切换，GORM 透明适配
 - **客户管理**: 录入和维护客户信息，敏感信息加密存储
-- **项目管理**: 项目全生命周期管理（立项→实施→竣工）
+- **项目管理**: 项目全生命周期管理（立项→实施→上线→竣工）
 - **统一任务模型**: 项目任务 / 客户任务 / 日常任务，一套模型三类场景
 - **需求跟踪**: 项目需求 + 客户售后需求，状态流转管理
-- **工时统计**: 按日录入工时，按周汇总，8 小时比例分配
-- **周报生成**: 模板化生成个人/项目周报，支持 AI 生成（优先 DeepSeek）
+- **工时统计**: 按日录入工时，支持统计和 CSV 导出（Excel 可打开）
+- **周报生成**: 模板化生成个人/项目周报，支持 AI mock 草稿
 - **用户独立 AI 配置**: 每个用户配置自己的 AI Key，加密存储，Key 不出服务器
 - **数据安全**: AES-256-GCM 加密敏感字段，JWT 认证，审计日志
 
@@ -49,9 +49,9 @@ IPMP（Intelligent Project Management Platform）后端服务，提供项目管�
 | 认证 | JWT (access + refresh token) |
 | 加密 | AES-256-GCM |
 | 配置 | Viper (`${ENV_VAR}` 格式) |
-| 日志 | Zerolog |
-| AI | DeepSeek (优先) / OpenAI / Claude (Provider 接口可扩展) |
-| Excel | excelize v2 |
+| 日志 | 标准库 log + GORM logger |
+| AI | mock 优先，保留 DeepSeek / OpenAI / Claude 配置边界 |
+| 导出 | CSV（Excel 兼容） |
 
 ## 快速开始
 
@@ -104,7 +104,6 @@ ipmp-server/
 │   ├── dto/{request,response}/   # 请求/响应 DTO
 │   ├── repository/               # 数据访问层
 │   ├── service/                  # 业务逻辑层
-│   │   └── ai/                   # AI Provider 接口
 │   ├── handler/                  # HTTP 处理器
 │   ├── router/router.go          # 路由注册
 │   └── pkg/                      # 内部工具包
@@ -114,8 +113,8 @@ ipmp-server/
 │   ├── pg/                       # PostgreSQL DDL
 │   └── mysql/                    # MySQL DDL
 ├── .github/workflows/
-│   ├── ci.yml                    # CI: PG + MySQL 双 job 测试
-│   └── deploy-dev.yml            # CD-Dev: dev* tag 触发 → Docker 构建 → 部署
+│   ├── ci.yml                    # CI: go build ./cmd/server
+│   └── deploy-dev.yml            # 已停用，仅保留手动 no-op
 ├── config.yaml
 ├── docker-compose.yml
 ├── Dockerfile
@@ -135,10 +134,11 @@ ipmp-server/
 | Projects | `GET /api/v1/projects` | 项目 CRUD |
 | Tasks | `GET /api/v1/tasks` | 任务管理 + 状态流转 |
 | Requirements | `GET /api/v1/requirements` | 需求管理 |
-| WorkLogs | `GET /api/v1/work-logs/stats` | 工时录入 + 统计聚合 |
+| WorkLogs | `GET /api/v1/work-logs/stats` | 工时录入 + 统计聚合 + CSV 导出 |
+| Dashboard | `GET /api/v1/dashboard/stats` | 实时聚合概览 |
 | AIConfig | `GET /api/v1/ai-config` | 用户独立 AI Key 配置 |
 | Reports | `POST /api/v1/weekly-reports/generate` | 生成周报 |
-| AI | `POST /api/v1/ai/generate-report` | AI 生成报告 (DeepSeek/OpenAI/Claude) |
+| AI | `POST /api/v1/ai/generate-report` | AI mock 生成报告 |
 
 详细 API 文档参见 [docs/API.md](docs/API.md)。
 
@@ -158,28 +158,25 @@ Handler → Service → Repository → PostgreSQL / MySQL (DB_TYPE 切换)
 
 | Pipeline | 触发 | 内容 |
 |----------|------|------|
-| **CI** | push / PR to main | PG + MySQL 双 job 独立测试、golangci-lint、gitleaks、build |
-| **CD-Dev** | tag `dev*` | Docker 构建 → ghcr.io → SSH 部署到开发服务器 |
+| **CI** | push / PR to main | `go build ./cmd/server` |
+| **CD-Dev** | 手动触发 | 已停用 no-op，不执行 Docker/SSH 部署 |
 
 ## 分支策略
 
 ```
-feat/xxx → PR → CI → merge main → tag dev* → CD-Dev 部署
+feat/xxx → PR → CI → merge main；部署前先执行本地 smoke 校验
 ```
 
-## Dev 部署
+## 本地校验
 
-详见 [docker-compose.yml](docker-compose.yml) 和 [nginx.conf](nginx.conf)。
-
-```bash
-# 服务器初始化（仅一次）
-mkdir -p /opt/ipmp/www
-cp .env.example .env   # 填入数据库/JWT/加密密钥
-
-# 触发部署
-git tag dev-0.1.0 && git push origin main --tags
-# CD-Dev 自动: Docker 构建 → push ghcr.io → rsync config → SSH 部署
+```powershell
+$env:GOCACHE='C:\DEV\ipmp\.cache\go-build'
+$env:GOMODCACHE='C:\DEV\ipmp\.cache\gomod'
+go test ./...
+go build ./cmd/server
 ```
+
+数据库约束修复先运行 `scripts/check_constraints_*.sql`，确认无活跃 code 重复后再手动执行 `scripts/fix_constraints_*.sql`。
 
 ## 安全
 
@@ -197,8 +194,8 @@ git tag dev-0.1.0 && git push origin main --tags
 
 - [x] 客户/项目 CRUD + 多数据库 + CI/CD + Dev 部署 (Phase 1)
 - [x] 用户管理 + 任务 + 需求 + 工时 + AI 配置 + admin 仪表盘 (Phase 2)
-- [ ] 周报生成 + 工时统计 + Excel 导出 (Phase 3)
-- [ ] AI 周报生成 — DeepSeek 优先 (Phase 4)
+- [x] 周报生成 + 工时统计 + CSV 导出 (Phase 3 最小可用)
+- [x] AI mock 周报生成 (Phase 4 最小可用)
 - [ ] 文件附件 + 通知系统 + 暗色模式 + 生产 CD (Phase 5)
 
 ## 贡献指南

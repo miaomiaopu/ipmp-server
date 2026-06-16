@@ -21,7 +21,7 @@
 
 | 字段 | 类型 | 变更 |
 |------|------|------|
-| `customer_code` | VARCHAR(32) UNIQUE NOT NULL | |
+| `customer_code` | VARCHAR(32) NOT NULL，活跃记录唯一 | 软删除后允许复用 |
 | `name` | VARCHAR(256) NOT NULL | |
 | `contact_person` | VARCHAR(128) | 展示脱敏 |
 | `contact_phone` | TEXT, EncryptedField | |
@@ -34,7 +34,7 @@
 
 | 字段 | 类型 | 变更 |
 |------|------|------|
-| `project_code` | VARCHAR(32) UNIQUE NOT NULL | |
+| `project_code` | VARCHAR(32) NOT NULL，活跃记录唯一 | 软删除后允许复用 |
 | `name` | VARCHAR(256) NOT NULL | |
 | `customer_id` | CHAR(36) FK→customers | v0.2: **必填** |
 | `manager_id` | CHAR(36) FK→users | |
@@ -84,14 +84,14 @@
 | users | 6 | 6 | ✅ |
 | customers | 7 | 7 | ✅ |
 | projects | 8 | 8 | ✅ |
-| tasks | 10 | 8 | ❌ 迁移多 assignee_id/estimated_hours/actual_hours |
-| requirements | 7 | 8 | ❌ 迁移多 submitter / 缺 requirement_code/scheduled_date |
+| tasks | 8 | 8 | ✅ |
+| requirements | 9 | 9 | ✅ |
 | work_logs | 5 | 5 | ✅ |
 | weekly_reports | 6 | 6 | ✅ |
 | user_ai_configs | 5 | 5 | ✅ |
 | audit_logs | 5 | 5 | ✅ |
 
-**GORM AutoMigrate** 运行时自动处理: tasks 保留旧列(不删数据), requirements 新增并删除 submitter。迁移文件未同步是因本次在 fix 分支修改, 合并 main 后统一更新。
+迁移文件已对齐 v0.2 数据模型。`customer_code/project_code` 使用“活跃记录唯一”约束；现有数据库先执行 `scripts/check_constraints_*.sql`，确认无活跃重复后再手动执行 `scripts/fix_constraints_*.sql`。
 
 ## 关联汇总
 
@@ -114,4 +114,4 @@ tasks ──1:n──→ work_logs (task_id)
 
 **删除级联**: 客户软删除→仅提示; 项目软删除→关联任务/需求同步软删除; 用户软删除→工时保留。
 
-**软删除+去重**: 已删记录(code)允许新建同code, GORM deleted_at联合索引实现。
+**软删除+去重**: 已删记录(code)允许新建同 code；PostgreSQL 使用 partial unique index，MySQL 使用 generated column unique key。

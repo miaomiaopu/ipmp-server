@@ -129,7 +129,7 @@ Content-Type: application/json
 
 每个用户独立管理自己的 AI Key。API Key 加密存储，**API 响应永远不返回完整 Key**。
 
-### GET `/users/:id/ai-config`
+### GET `/ai-config`
 
 获取当前 AI 配置。仅返回掩码后的 Key。
 
@@ -146,7 +146,7 @@ Content-Type: application/json
 }
 ```
 
-### POST `/users/:id/ai-config/update`
+### POST `/ai-config/update`
 
 更新 AI 配置。`api_key` 明文传输（通过 HTTPS 加密），服务端 AES-256-GCM 加密存储。
 
@@ -159,13 +159,9 @@ Content-Type: application/json
 }
 ```
 
-### POST `/users/:id/ai-config/delete`
+### POST `/ai-config/delete`
 
 删除 AI 配置。
-
-### POST `/users/:id/ai-config/test`
-
-测试 AI 连接是否正常。
 
 ---
 
@@ -249,7 +245,7 @@ Content-Type: application/json
 
 ### GET `/tasks`
 
-任务列表（分页+筛选）。查询参数：`?task_type=project&project_id=xxx&status=todo&page=1&page_size=20`。
+任务列表（分页+筛选）。查询参数：`?task_type=project&project_id=xxx&status=in_progress&due_before=2026-06-30&page=1&page_size=20`。
 
 ### GET `/tasks/:id`
 
@@ -323,10 +319,6 @@ Content-Type: application/json
 
 更新需求。
 
-### POST `/requirements/:id/status`
-
-更新需求状态。
-
 ### POST `/requirements/:id/delete`
 
 软删除需求。
@@ -337,7 +329,7 @@ Content-Type: application/json
 
 ### GET `/work-logs`
 
-工时列表（分页+筛选）。查询参数：`?user_id=xxx&project_id=xxx&start_date=2026-05-19&end_date=2026-05-25`。
+工时列表（分页+筛选）。普通用户固定查询自己的工时；查询参数：`?project_id=xxx&start_date=2026-05-19&end_date=2026-05-25`。
 
 ### GET `/work-logs/:id`
 
@@ -393,7 +385,7 @@ Content-Type: application/json
 
 ### GET `/work-logs/export`
 
-导出 Excel。查询参数：`?start_date=xxx&end_date=xxx&format=xlsx`。
+导出 CSV（Excel 可打开）。查询参数：`?project_id=xxx&start_date=xxx&end_date=xxx`。
 
 ---
 
@@ -401,7 +393,7 @@ Content-Type: application/json
 
 ### GET `/weekly-reports`
 
-周报列表。查询参数：`?user_id=xxx&week_start=2026-05-19&report_type=personal`。
+周报列表。默认返回当前用户创建的周报。
 
 ### GET `/weekly-reports/:id`
 
@@ -416,7 +408,8 @@ Content-Type: application/json
   "week_start": "2026-05-19",
   "week_end": "2026-05-25",
   "report_type": "personal",
-  "project_id": null
+  "project_id": null,
+  "use_ai": false
 }
 ```
 
@@ -442,17 +435,19 @@ Content-Type: application/json
 {
   "code": 0,
   "data": {
+    "customers": 10,
+    "projects": 8,
     "active_projects": 5,
-    "tasks_this_week": 12,
-    "hours_this_week": 40.0,
-    "pending_requirements": 3
+    "open_tasks": 12,
+    "open_requirements": 3,
+    "this_week_hours": 40.0
   }
 }
 ```
 
 ### GET `/dashboard/this-week`
 
-本周详细数据，按项目分组。
+本周详细数据，返回 `week_start`、`week_end`、`total_hours` 和工时记录。
 
 ---
 
@@ -460,21 +455,20 @@ Content-Type: application/json
 
 ### POST `/ai/generate-report`
 
-使用当前用户配置的 AI Key 生成周报内容。如用户未配置 AI，返回错误。
+使用当前用户 AI 配置作为 provider/model 元数据；当前实现返回 mock 内容，不调用外部 Provider。
 
 ```json
 {
-  "week_start": "2026-05-19",
-  "week_end": "2026-05-25",
-  "report_type": "personal",
-  "project_id": null
+  "content": "本周完成客户资料整理和工时统计修复"
 }
 
 Response 200:
 {
   "code": 0,
   "data": {
-    "content": "## 本周工作总结\n\n### 一、项目进展\n..."
+    "provider": "mock",
+    "model": "mock",
+    "content": "AI mock 周报草稿\n\n..."
   }
 }
 ```
@@ -485,6 +479,6 @@ Response 200:
 
 ```json
 {
-  "text": "需要摘要的长文本"
+  "content": "需要摘要的长文本"
 }
 ```
